@@ -28,6 +28,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard',  href: '/dashboard',            icon: LayoutDashboard, roles: ['OWNER','ADMIN','TECHNICIAN'] },
+  { label: 'Direct POS', href: '/dashboard/sales/new',  icon: ShoppingCart,    roles: ['OWNER','ADMIN','TECHNICIAN'] },
   { label: 'Tickets',    href: '/dashboard/tickets',    icon: Ticket,          roles: ['OWNER','ADMIN','TECHNICIAN'] },
   { label: 'Inventory',  href: '/dashboard/inventory',  icon: Package,         roles: ['OWNER','ADMIN'] },
   { label: 'Customers',  href: '/dashboard/customers',  icon: Users,           roles: ['OWNER','ADMIN','TECHNICIAN'] },
