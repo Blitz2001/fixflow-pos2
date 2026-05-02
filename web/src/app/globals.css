@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 222 25% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 10%;
+    --primary: 213 92% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 220 20% 20%;
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 10% 46%;
+    --accent: 213 92% 95%;
+    --accent-foreground: 213 92% 30%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 89%;
+    --input: 220 13% 89%;
+    --ring: 213 92% 56%;
+    --radius: 0.625rem;
+  }
+
+  .dark {
+    --background: 222 25% 7%;
+    --foreground: 210 20% 93%;
+    --card: 222 22% 10%;
+    --card-foreground: 210 20% 93%;
+    --primary: 213 92% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 18% 15%;
+    --secondary-foreground: 220 15% 80%;
+    --muted: 220 18% 15%;
+    --muted-foreground: 220 10% 48%;
+    --accent: 213 60% 18%;
+    --accent-foreground: 213 92% 70%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 16% 17%;
+    --input: 220 16% 17%;
+    --ring: 213 92% 56%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground antialiased; }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+}
+
+@layer utilities {
+  /* Status chip colours */
+  .status-intake       { @apply bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-300; }
+  .status-diagnosing   { @apply bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300; }
+  .status-waiting_parts{ @apply bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300; }
+  .status-repairing    { @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300; }
+  .status-ready        { @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300; }
+  .status-delivered    { @apply bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300; }
+  .status-cancelled    { @apply bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300; }
+
+  /* Priority badges */
+  .priority-low    { @apply bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400; }
+  .priority-normal { @apply bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300; }
+  .priority-high   { @apply bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300; }
+  .priority-urgent { @apply bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300; }
+}
