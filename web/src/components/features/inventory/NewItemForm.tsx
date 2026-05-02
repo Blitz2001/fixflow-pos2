@@ -13,8 +13,8 @@ const itemSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   brand: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
-  base_cost: z.number().min(0),
-  selling_price: z.number().min(0),
+  cost_price: z.number().min(0),
+  sell_price: z.number().min(0),
   sku: z.string().optional(),
 })
 
@@ -26,7 +26,7 @@ export function NewItemForm({ shopId }: { shopId: string }) {
 
   const { register, handleSubmit, formState: { errors } } = useForm<ItemFormValues>({
     resolver: zodResolver(itemSchema),
-    defaultValues: { base_cost: 0, selling_price: 0 }
+    defaultValues: { cost_price: 0, sell_price: 0 }
   })
 
   const onSubmit = async (data: ItemFormValues) => {
@@ -90,12 +90,12 @@ export function NewItemForm({ shopId }: { shopId: string }) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">Base Cost</label>
-            <input {...register('base_cost', { valueAsNumber: true })} type="number" step="0.01" className="w-full px-3 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-brand-500" />
+            <input {...register('cost_price', { valueAsNumber: true })} type="number" step="0.01" className="w-full px-3 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-brand-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">Selling Price *</label>
-            <input {...register('selling_price', { valueAsNumber: true })} type="number" step="0.01" className="w-full px-3 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-brand-500" />
-            {errors.selling_price && <p className="text-xs text-red-400 mt-1">{errors.selling_price.message}</p>}
+            <input {...register('sell_price', { valueAsNumber: true })} type="number" step="0.01" className="w-full px-3 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-brand-500" />
+            {errors.sell_price && <p className="text-xs text-red-400 mt-1">{errors.sell_price.message}</p>}
           </div>
         </div>
       </div>

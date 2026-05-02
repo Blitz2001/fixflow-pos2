@@ -27,7 +27,7 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
       assigned_parts:serial_numbers (
         id,
         serial_number,
-        item:inventory_items (name, selling_price)
+        item:inventory_items (name, sell_price)
       )
     `)
     .eq('id', id)

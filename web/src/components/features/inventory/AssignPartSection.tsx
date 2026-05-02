@@ -22,9 +22,9 @@ export function AssignPartSection({ ticketId, shopId, currentAssignedSerials }: 
     // Fetch all inventory items that have stock > 0
     supabase
       .from('inventory_items')
-      .select('id, name, stock_quantity')
+      .select('id, name, quantity')
       .eq('shop_id', shopId)
-      .gt('stock_quantity', 0)
+      .gt('quantity', 0)
       .then(({ data }) => setItems(data || []))
   }, [shopId, supabase])
 
@@ -58,7 +58,7 @@ export function AssignPartSection({ ticketId, shopId, currentAssignedSerials }: 
     }
   }
 
-  const totalPartsCost = currentAssignedSerials.reduce((acc, sn) => acc + (sn.item?.selling_price || 0), 0)
+  const totalPartsCost = currentAssignedSerials.reduce((acc, sn) => acc + (sn.item?.sell_price || 0), 0)
 
   return (
     <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
@@ -75,7 +75,7 @@ export function AssignPartSection({ ticketId, shopId, currentAssignedSerials }: 
                 <p className="font-medium text-foreground text-sm">{sn.item?.name}</p>
                 <p className="font-mono text-xs text-muted-foreground mt-0.5">SN: {sn.serial_number}</p>
               </div>
-              <span className="font-semibold text-brand-500 text-sm">+{sn.item?.selling_price} LKR</span>
+              <span className="font-semibold text-brand-500 text-sm">+{sn.item?.sell_price} LKR</span>
             </div>
           ))
         ) : (
@@ -105,7 +105,7 @@ export function AssignPartSection({ ticketId, shopId, currentAssignedSerials }: 
           >
             <option value="">-- Select Item Type --</option>
             {items.map(i => (
-              <option key={i.id} value={i.id}>{i.name} ({i.stock_quantity} in stock)</option>
+              <option key={i.id} value={i.id}>{i.name} ({i.quantity} in stock)</option>
             ))}
           </select>
 

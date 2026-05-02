@@ -61,7 +61,7 @@ export default async function InventoryDetailPage({ params }: InventoryDetailPag
           <p className="text-sm text-muted-foreground mt-1 flex gap-4">
             <span>SKU: {item.sku || 'N/A'}</span>
             <span>Brand: {item.brand || 'N/A'}</span>
-            <span>Stock: <strong className="text-foreground">{item.stock_quantity}</strong></span>
+            <span>Stock: <strong className="text-foreground">{item.quantity}</strong></span>
           </p>
         </div>
       </div>
@@ -128,17 +128,17 @@ export default async function InventoryDetailPage({ params }: InventoryDetailPag
             <div className="space-y-4">
               <div className="flex justify-between items-center pb-4 border-b border-border">
                 <span className="text-sm text-muted-foreground">Base Cost</span>
-                <span className="font-medium text-foreground">{item.base_cost} LKR</span>
+                <span className="font-medium text-foreground">{item.cost_price} LKR</span>
               </div>
               <div className="flex justify-between items-center pb-4 border-b border-border">
                 <span className="text-sm text-muted-foreground">Selling Price</span>
-                <span className="font-medium text-brand-500">{item.selling_price} LKR</span>
+                <span className="font-medium text-brand-500">{item.sell_price} LKR</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Profit Margin</span>
                 <span className="font-medium text-green-400">
-                  {item.selling_price > 0 
-                    ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 100) 
+                  {item.sell_price > 0 
+                    ? Math.round(((item.sell_price - item.cost_price) / item.sell_price) * 100) 
                     : 0}%
                 </span>
               </div>

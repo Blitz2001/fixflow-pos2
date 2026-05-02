@@ -8,8 +8,8 @@ interface InventoryItemInput {
   name: string
   brand?: string
   category: string
-  base_cost: number
-  selling_price: number
+  cost_price: number
+  sell_price: number
   sku?: string
   shop_id: string
 }
@@ -19,7 +19,7 @@ export async function createInventoryItem(data: InventoryItemInput) {
   
   const { data: item, error } = await supabase
     .from('inventory_items')
-    .insert({ ...data, stock_quantity: 0 }) // triggers will handle quantity later
+    .insert({ ...data, quantity: 0 }) // triggers will handle quantity later
     .select()
     .single()
 

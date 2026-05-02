@@ -65,15 +65,15 @@ export default async function InventoryPage() {
                       <p className="text-xs text-muted-foreground mt-1">{item.brand}</p>
                     </td>
                     <td className="px-6 py-4 font-medium text-foreground">
-                      {item.selling_price} LKR
+                      {item.sell_price} LKR
                     </td>
                     <td className="px-6 py-4">
-                      {item.stock_quantity === 0 ? (
+                      {item.quantity === 0 ? (
                         <span className="inline-flex items-center gap-1 text-red-400 font-medium text-xs bg-red-400/10 px-2 py-1 rounded-md">
                           <AlertTriangle className="w-3.5 h-3.5" /> Out of Stock
                         </span>
                       ) : (
-                        <span className="font-medium text-foreground">{item.stock_quantity} in stock</span>
+                        <span className="font-medium text-foreground">{item.quantity} in stock</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
