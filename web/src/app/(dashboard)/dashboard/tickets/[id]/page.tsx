@@ -149,6 +149,17 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
             currentAssignedSerials={ticket.assigned_parts || []} 
           />
 
+          {ticket.status !== 'completed' && (
+            <div className="mt-8">
+              <Link 
+                href={`/dashboard/sales/checkout/${ticket.id}`}
+                className="w-full flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 rounded-2xl transition-all shadow-md text-lg"
+              >
+                Proceed to Checkout
+              </Link>
+            </div>
+          )}
+
           {ticket.estimated_cost && (
             <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
               <p className="text-xs text-muted-foreground mb-1">Estimated Cost</p>
