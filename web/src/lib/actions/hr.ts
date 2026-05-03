@@ -13,7 +13,7 @@ export async function processTimeClock(pin: string, shopId: string) {
   // 1. Find employee by PIN and Shop
   const { data: employee, error: empErr } = await supabase
     .from('hr_employees')
-    .select('id, full_name, daily_rate')
+    .select('id, full_name, daily_rate, required_hours')
     .eq('shop_id', shopId)
     .eq('auth_pin', pin)
     .single()
@@ -36,20 +36,37 @@ export async function processTimeClock(pin: string, shopId: string) {
     .single()
 
   if (attendance && !attendance.check_out) {
-    // CLOCK OUT
+    // CLOCK OUT — calculate prorated wage
+    const checkOutTime = new Date()
+    const hoursWorked = (checkOutTime.getTime() - new Date(attendance.check_in).getTime()) / 3_600_000
+    const requiredHours = (employee as any).required_hours ?? 8
+
+    // Full pay if met required hours, otherwise prorate
+    const wageEarned = hoursWorked >= requiredHours
+      ? employee.daily_rate
+      : parseFloat(((hoursWorked / requiredHours) * employee.daily_rate).toFixed(2))
+
     const { error: outErr } = await supabase
       .from('hr_attendance')
-      .update({ 
-        check_out: new Date().toISOString(),
-        // Assign the base daily rate (later we can calculate partial days or add commissions here)
-        daily_wage_earned: employee.daily_rate 
+      .update({
+        check_out: checkOutTime.toISOString(),
+        daily_wage_earned: wageEarned
       })
       .eq('id', attendance.id)
 
     if (outErr) return { success: false, message: 'Database error on clock out.' }
-    
+
+    const hoursDisplay = hoursWorked < 1
+      ? `${Math.round(hoursWorked * 60)}m`
+      : `${hoursWorked.toFixed(1)}h`
+    const paidFull = hoursWorked >= requiredHours
+
     revalidatePath('/dashboard')
-    return { success: true, message: `Goodbye, ${employee.full_name}! Clocked out successfully.`, action: 'clock_out' }
+    return {
+      success: true,
+      message: `Goodbye, ${employee.full_name}! Worked ${hoursDisplay}. Earned LKR ${wageEarned.toLocaleString()}${paidFull ? '' : ` (prorated — needed ${requiredHours}h)`}.`,
+      action: 'clock_out'
+    }
   } else {
     // CLOCK IN
     const { error: inErr } = await supabase
