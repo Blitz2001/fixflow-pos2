@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useOptimistic } from 'react'
 import { updateTicketStatus, getWhatsAppUpdateLink } from '@/lib/actions/tickets'
 import { toast } from 'sonner'
 import { 
@@ -29,7 +29,12 @@ export function StatusSelector({ ticketId, currentStatus, shopName }: StatusSele
   const [isOpen, setIsOpen] = useState(false)
   const [waLink, setWaLink] = useState<string | null>(null)
 
-  const currentStatusInfo = STATUSES.find(s => s.id === currentStatus) || STATUSES[0]
+  const [optimisticStatus, addOptimisticStatus] = useOptimistic<TicketStatus, TicketStatus>(
+    currentStatus,
+    (state, newStatus) => newStatus
+  )
+
+  const currentStatusInfo = STATUSES.find(s => s.id === optimisticStatus) || STATUSES[0]
   const Icon = currentStatusInfo.icon
 
   const handleStatusChange = async (newStatus: TicketStatus) => {
@@ -38,6 +43,7 @@ export function StatusSelector({ ticketId, currentStatus, shopName }: StatusSele
     setIsOpen(false)
     setWaLink(null)
     startTransition(async () => {
+      addOptimisticStatus(newStatus)
       try {
         await updateTicketStatus(ticketId, newStatus)
         const link = await getWhatsAppUpdateLink(ticketId, shopName)
@@ -82,7 +88,7 @@ export function StatusSelector({ ticketId, currentStatus, shopName }: StatusSele
                 <p className="px-4 py-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">Update Repair Status</p>
                 {STATUSES.map((status) => {
                   const SIcon = status.icon
-                  const active = currentStatus === status.id
+                  const active = optimisticStatus === status.id
                   return (
                     <button
                       key={status.id}

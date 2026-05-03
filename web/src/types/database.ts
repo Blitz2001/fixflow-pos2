@@ -14,6 +14,7 @@ export type PaymentType = 'Cash' | 'Bank Transfer' | 'QR' | 'Card'
 export type TransactionType = 'repair_payment' | 'direct_sale' | 'refund'
 export type ExpenseCategory = 'Rent' | 'Salary' | 'Utilities' | 'Parts Purchase' | 'Marketing' | 'Other'
 export type ProductType = 'storable' | 'service' | 'consumable'
+export type LocationType = 'internal' | 'vendor' | 'customer' | 'inventory_loss' | 'scrap'
 
 // ── Table Rows ────────────────────────────────────────────────────────────────
 export interface ShopRow {
@@ -71,6 +72,17 @@ export interface InventoryItemRow {
   quantity: number; low_stock_threshold: number; product_type: ProductType; created_at: string
 }
 
+export interface StockLocationRow {
+  id: string; shop_id: string; name: string; type: LocationType; created_at: string
+}
+
+export interface StockMoveRow {
+  id: string; shop_id: string; item_id: string; serial_number_id: string | null
+  source_location_id: string; dest_location_id: string
+  quantity: number; status: 'draft' | 'done' | 'cancelled'; reference: string | null
+  created_at: string
+}
+
 export interface TransactionRow {
   id: string; shop_id: string; ticket_id: string | null; partner_id: string | null
   type: TransactionType; payment_type: PaymentType
@@ -111,6 +123,8 @@ export interface Database {
       ticket_status_history:  { Row: TicketStatusHistoryRow; Insert: Omit<TicketStatusHistoryRow, 'id'|'changed_at'>; Update: never }
       evidence_logs:          { Row: EvidenceLogRow;        Insert: Omit<EvidenceLogRow, 'id'|'uploaded_at'>;        Update: never }
       inventory_items:        { Row: InventoryItemRow;      Insert: Omit<InventoryItemRow, 'id'|'created_at'>;       Update: Partial<Omit<InventoryItemRow, 'id'|'shop_id'|'created_at'>> }
+      stock_locations:        { Row: StockLocationRow;      Insert: Omit<StockLocationRow, 'id'|'created_at'>;       Update: Partial<Omit<StockLocationRow, 'id'|'shop_id'|'created_at'>> }
+      stock_moves:            { Row: StockMoveRow;          Insert: Omit<StockMoveRow, 'id'|'created_at'>;           Update: Partial<Omit<StockMoveRow, 'id'|'shop_id'|'created_at'>> }
       transactions:           { Row: TransactionRow;        Insert: Omit<TransactionRow, 'id'|'created_at'>;         Update: Partial<Pick<TransactionRow, 'status'|'paid_at'>> }
       transaction_items:      { Row: TransactionItemRow;    Insert: Omit<TransactionItemRow, 'id'>;                  Update: never }
       expenses:               { Row: ExpenseRow;            Insert: Omit<ExpenseRow, 'id'|'created_at'>;             Update: Partial<Omit<ExpenseRow, 'id'|'shop_id'|'created_at'>> }
