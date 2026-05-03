@@ -17,7 +17,7 @@ export async function processCheckout(
   const { data: ticket, error: ticketErr } = await supabase
     .from('repair_tickets')
     .select(`
-      customer_id,
+      device:devices(partner_id),
       assigned_parts:serial_numbers(
         id,
         item:inventory_items(id, name, cost_price, sell_price)
@@ -67,7 +67,7 @@ export async function processCheckout(
     .insert({
       shop_id: shopId,
       ticket_id: ticketId,
-      customer_id: ticket.customer_id,
+      partner_id: (ticket as any).device?.partner_id,
       type: 'repair_payment',
       payment_type: paymentType,
       subtotal,

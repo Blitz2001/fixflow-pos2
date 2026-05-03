@@ -7,7 +7,7 @@ export default async function SupplierDetailPage({ params }: { params: { id: str
   const supabase = await createServerClient()
   
   const { data: supplier } = await supabase
-    .from('suppliers')
+    .from('partners')
     .select('*')
     .eq('id', params.id)
     .single()
@@ -31,7 +31,7 @@ export default async function SupplierDetailPage({ params }: { params: { id: str
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                 <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
                   <User className="w-4 h-4 text-brand-500" />
-                  {supplier.contact_person}
+                  Supplier
                 </div>
                 {supplier.phone && (
                   <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">

@@ -34,30 +34,31 @@ export async function createTicket(input: CreateTicketInput) {
 
   const parsed = createTicketSchema.parse(input)
 
-  // 1. Upsert customer (search by phone first)
-  const { data: existingCustomer } = await supabase
-    .from('customers')
+  // 1. Upsert partner (search by phone first)
+  const { data: existingPartner } = await supabase
+    .from('partners')
     .select('id')
     .eq('shop_id', parsed.shop_id)
-    .eq('phone_number', parsed.customer_phone)
+    .eq('phone', parsed.customer_phone)
     .single()
 
-  let customerId: string
-  if (existingCustomer) {
-    customerId = existingCustomer.id
+  let partnerId: string
+  if (existingPartner) {
+    partnerId = existingPartner.id
   } else {
-    const { data: newCustomer, error: custErr } = await supabase
-      .from('customers')
+    const { data: newPartner, error: partnerErr } = await supabase
+      .from('partners')
       .insert({
         shop_id:      parsed.shop_id,
         name:         parsed.customer_name,
-        phone_number: parsed.customer_phone,
+        phone:        parsed.customer_phone,
         email:        parsed.customer_email || null,
+        partner_types: ['is_customer'],
       })
       .select('id')
       .single()
-    if (custErr) throw new Error(custErr.message)
-    customerId = newCustomer.id
+    if (partnerErr) throw new Error(partnerErr.message)
+    partnerId = newPartner.id
   }
 
   // 2. Create device
@@ -65,7 +66,7 @@ export async function createTicket(input: CreateTicketInput) {
     .from('devices')
     .insert({
       shop_id:       parsed.shop_id,
-      customer_id:   customerId,
+      partner_id:    partnerId,
       brand:         parsed.device_brand || null,
       model:         parsed.device_model,
       serial_number: parsed.device_serial || null,
@@ -164,16 +165,16 @@ export async function getWhatsAppUpdateLink(ticketId: string, shopName: string) 
     .from('repair_tickets')
     .select(`
       ticket_number, status,
-      device:devices(model, customer:customers(name, phone_number))
+      device:devices(model, partner:partners(name, phone))
     `)
     .eq('id', ticketId)
     .single()
 
   if (!ticket) throw new Error('Ticket not found')
 
-  const device   = ticket.device as { model: string; customer: { name: string; phone_number: string } }
-  const name     = device?.customer?.name ?? 'Customer'
-  const phone    = device?.customer?.phone_number?.replace(/\D/g, '') ?? ''
+  const device   = ticket.device as { model: string; partner: { name: string; phone: string } }
+  const name     = device?.partner?.name ?? 'Customer'
+  const phone    = device?.partner?.phone?.replace(/\D/g, '') ?? ''
   const model    = device?.model ?? 'your device'
   const status   = ticket.status.replace('_', ' ')
   const trackUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/track/${ticket.ticket_number}`

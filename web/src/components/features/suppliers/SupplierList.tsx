@@ -5,10 +5,10 @@ import { Search, Plus, Phone, Mail, User, X, Loader2, Building2, Wallet, ArrowUp
 import Link from 'next/link'
 import { createSupplier } from '@/lib/actions/suppliers'
 import { toast } from 'sonner'
-import type { SupplierRow } from '@/types/database'
+import type { PartnerRow } from '@/types/database'
 
 interface SupplierListProps {
-  initialSuppliers: SupplierRow[]
+  initialSuppliers: PartnerRow[]
   shopId: string
 }
 
@@ -19,8 +19,7 @@ export function SupplierList({ initialSuppliers, shopId }: SupplierListProps) {
 
   const filteredSuppliers = initialSuppliers.filter(s => 
     s.name.toLowerCase().includes(search.toLowerCase()) || 
-    (s.phone && s.phone.includes(search)) ||
-    (s.contact_person && s.contact_person.toLowerCase().includes(search.toLowerCase()))
+    (s.phone && s.phone.includes(search))
   )
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -31,10 +30,8 @@ export function SupplierList({ initialSuppliers, shopId }: SupplierListProps) {
     try {
       await createSupplier(shopId, {
         name: formData.get('name') as string,
-        contact_person: formData.get('contact_person') as string,
         phone: formData.get('phone') as string,
         email: formData.get('email') as string,
-        description: formData.get('description') as string,
       })
       toast.success('Supplier added successfully')
       setIsModalOpen(false)
@@ -101,7 +98,7 @@ export function SupplierList({ initialSuppliers, shopId }: SupplierListProps) {
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                   <div className="flex items-center gap-2.5 text-sm font-bold text-muted-foreground">
                     <User className="w-4 h-4 text-brand-500" />
-                    {supplier.contact_person || 'No Contact Person'}
+                    Supplier
                   </div>
                   {supplier.phone && (
                     <div className="flex items-center gap-2.5 text-sm font-bold text-muted-foreground">
@@ -161,23 +158,13 @@ export function SupplierList({ initialSuppliers, shopId }: SupplierListProps) {
                 <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2 ml-1">Company Name</label>
                 <input name="name" type="text" required placeholder="e.g. Apex Tech Solutions" className="w-full px-5 py-4 bg-muted/50 border border-border rounded-2xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all font-bold" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2 ml-1">Contact Person</label>
-                  <input name="contact_person" type="text" placeholder="John Smith" className="w-full px-5 py-4 bg-muted/50 border border-border rounded-2xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all font-bold" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2 ml-1">Phone Number</label>
-                  <input name="phone" type="tel" placeholder="077 123 4567" className="w-full px-5 py-4 bg-muted/50 border border-border rounded-2xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all font-bold" />
-                </div>
+              <div>
+                <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2 ml-1">Phone Number</label>
+                <input name="phone" type="tel" placeholder="077 123 4567" className="w-full px-5 py-4 bg-muted/50 border border-border rounded-2xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all font-bold" />
               </div>
               <div>
                 <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2 ml-1">Email Address</label>
                 <input name="email" type="email" placeholder="sales@apextech.com" className="w-full px-5 py-4 bg-muted/50 border border-border rounded-2xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all font-bold" />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2 ml-1">Description / Notes</label>
-                <textarea name="description" placeholder="Supplier terms, delivery days, or any other notes..." rows={3} className="w-full px-5 py-4 bg-muted/50 border border-border rounded-2xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all font-bold resize-none" />
               </div>
               <div className="pt-6 flex gap-4">
                 <button 

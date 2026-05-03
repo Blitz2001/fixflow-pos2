@@ -12,7 +12,7 @@ export interface TicketCardData {
   status: TicketStatus
   priority: TicketPriority
   created_at: string
-  device: { model: string; customer?: { name: string } }
+  device: { model: string; partner?: { name: string } }
 }
 
 interface TicketCardProps {
@@ -65,7 +65,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
       </div>
 
       <p className="text-xs font-bold text-muted-foreground truncate mb-4 pl-6.5 opacity-80">
-        {ticket.device.customer?.name ?? 'Unknown Customer'}
+        {ticket.device.partner?.name ?? 'Unknown Customer'}
       </p>
 
       <div className="flex items-center justify-between mt-auto border-t border-border/50 pt-3">

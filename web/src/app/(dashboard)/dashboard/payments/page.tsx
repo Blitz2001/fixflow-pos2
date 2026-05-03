@@ -16,9 +16,10 @@ export default async function PaymentsPage() {
   let suppliers = []
   if (membership) {
     const { data } = await supabase
-      .from('suppliers')
+      .from('partners')
       .select('id, name')
       .eq('shop_id', membership.shop_id)
+      .contains('partner_types', ['is_supplier'])
       
     suppliers = data || []
   }

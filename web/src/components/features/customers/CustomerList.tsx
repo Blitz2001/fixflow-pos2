@@ -5,10 +5,10 @@ import { Search, Plus, Phone, Mail, Calendar, User, X, Loader2 } from 'lucide-re
 import Link from 'next/link'
 import { createCustomer } from '@/lib/actions/customers'
 import { toast } from 'sonner'
-import type { CustomerRow } from '@/types/database'
+import type { PartnerRow } from '@/types/database'
 
 interface CustomerListProps {
-  initialCustomers: CustomerRow[]
+  initialCustomers: PartnerRow[]
   shopId: string
 }
 
@@ -19,7 +19,7 @@ export function CustomerList({ initialCustomers, shopId }: CustomerListProps) {
 
   const filteredCustomers = initialCustomers.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase()) || 
-    c.phone_number.includes(search) ||
+    (c.phone && c.phone.includes(search)) ||
     (c.email?.toLowerCase().includes(search.toLowerCase()))
   )
 
@@ -31,7 +31,7 @@ export function CustomerList({ initialCustomers, shopId }: CustomerListProps) {
     try {
       await createCustomer(shopId, {
         name: formData.get('name') as string,
-        phone_number: formData.get('phone_number') as string,
+        phone: formData.get('phone') as string,
         email: formData.get('email') as string,
       })
       toast.success('Customer added successfully')
@@ -77,7 +77,7 @@ export function CustomerList({ initialCustomers, shopId }: CustomerListProps) {
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                   <div className="flex items-center gap-2.5 text-sm font-bold text-muted-foreground">
                     <Phone className="w-4 h-4 text-brand-500" />
-                    {customer.phone_number}
+                    {customer.phone}
                   </div>
                   {customer.email && (
                     <div className="flex items-center gap-2.5 text-sm font-bold text-muted-foreground">
@@ -129,7 +129,7 @@ export function CustomerList({ initialCustomers, shopId }: CustomerListProps) {
               </div>
               <div>
                 <label className="block text-xs font-bold text-muted-foreground uppercase mb-1.5 ml-1">Phone Number</label>
-                <input name="phone_number" type="tel" required placeholder="077 123 4567" className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all" />
+                <input name="phone" type="tel" required placeholder="077 123 4567" className="w-full px-4 py-3 bg-muted/30 border border-border rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-muted-foreground uppercase mb-1.5 ml-1">Email Address (Optional)</label>

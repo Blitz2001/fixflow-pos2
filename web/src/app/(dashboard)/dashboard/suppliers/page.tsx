@@ -15,9 +15,10 @@ export default async function SuppliersPage() {
   if (!membership) return null
 
   const { data: suppliers } = await supabase
-    .from('suppliers')
+    .from('partners')
     .select('*')
     .eq('shop_id', membership.shop_id)
+    .contains('partner_types', ['is_supplier'])
     .order('name', { ascending: true })
 
   return (

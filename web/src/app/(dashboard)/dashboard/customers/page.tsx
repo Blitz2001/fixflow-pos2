@@ -17,17 +17,18 @@ export default async function CustomersPage() {
 
   // Fetch all customers along with their devices and tickets count
   const { data: customers } = await supabase
-    .from('customers')
+    .from('partners')
     .select(`
       id,
       name,
-      phone_number,
+      phone,
       email,
       created_at,
       devices ( id, model ),
-      repair_tickets ( id )
+      repair_tickets:devices ( repair_tickets ( id ) )
     `)
     .eq('shop_id', membership.shop_id)
+    .contains('partner_types', ['is_customer'])
     .order('created_at', { ascending: false })
 
   return (
@@ -68,7 +69,7 @@ export default async function CustomersPage() {
                     </td>
                     <td className="px-6 py-4 space-y-1">
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="w-3.5 h-3.5" /> <span>{c.phone_number}</span>
+                        <Phone className="w-3.5 h-3.5" /> <span>{c.phone}</span>
                       </div>
                       {c.email && (
                         <div className="flex items-center gap-2 text-muted-foreground">
@@ -90,7 +91,7 @@ export default async function CustomersPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-medium text-foreground">{c.repair_tickets?.length || 0} Tickets</span>
+                      <span className="font-medium text-foreground">{c.repair_tickets?.flatMap((r: any) => r.repair_tickets)?.length || 0} Tickets</span>
                     </td>
                     <td className="px-6 py-4 text-muted-foreground">
                       {new Date(c.created_at).toLocaleDateString()}

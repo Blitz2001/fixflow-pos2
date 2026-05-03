@@ -13,6 +13,7 @@ export type MembershipRole = 'OWNER' | 'ADMIN' | 'TECHNICIAN'
 export type PaymentType = 'Cash' | 'Bank Transfer' | 'QR' | 'Card'
 export type TransactionType = 'repair_payment' | 'direct_sale' | 'refund'
 export type ExpenseCategory = 'Rent' | 'Salary' | 'Utilities' | 'Parts Purchase' | 'Marketing' | 'Other'
+export type ProductType = 'storable' | 'service' | 'consumable'
 
 // ── Table Rows ────────────────────────────────────────────────────────────────
 export interface ShopRow {
@@ -29,13 +30,13 @@ export interface MembershipRow {
   id: string; user_id: string; shop_id: string; role: MembershipRole; created_at: string
 }
 
-export interface CustomerRow {
-  id: string; shop_id: string; name: string; phone_number: string
-  email: string | null; created_at: string
+export interface PartnerRow {
+  id: string; shop_id: string; name: string; phone: string | null
+  email: string | null; partner_types: string[]; lead_time_days: number; created_at: string
 }
 
 export interface DeviceRow {
-  id: string; shop_id: string; customer_id: string; brand: string | null
+  id: string; shop_id: string; partner_id: string; brand: string | null
   model: string; serial_number: string | null; created_at: string
 }
 
@@ -64,19 +65,14 @@ export interface EvidenceLogRow {
 }
 
 export interface InventoryItemRow {
-  id: string; shop_id: string; supplier_id: string | null
+  id: string; shop_id: string; partner_id: string | null
   name: string; brand: string | null; category: string; sku: string | null
   cost_price: number; sell_price: number
-  quantity: number; low_stock_threshold: number; created_at: string
-}
-
-export interface SupplierRow {
-  id: string; shop_id: string; name: string
-  contact_person: string | null; phone: string | null; email: string | null; created_at: string
+  quantity: number; low_stock_threshold: number; product_type: ProductType; created_at: string
 }
 
 export interface TransactionRow {
-  id: string; shop_id: string; ticket_id: string | null; customer_id: string | null
+  id: string; shop_id: string; ticket_id: string | null; partner_id: string | null
   type: TransactionType; payment_type: PaymentType
   subtotal: number; tax_amount: number; discount: number; grand_total: number
   status: 'draft' | 'paid' | 'refunded'
@@ -109,13 +105,12 @@ export interface Database {
       shops:                  { Row: ShopRow;               Insert: Omit<ShopRow, 'id'|'created_at'>;               Update: Partial<Omit<ShopRow, 'id'|'created_at'>> }
       profiles:               { Row: ProfileRow;            Insert: Omit<ProfileRow, 'created_at'>;                  Update: Partial<Omit<ProfileRow, 'id'|'created_at'>> }
       memberships:            { Row: MembershipRow;         Insert: Omit<MembershipRow, 'id'|'created_at'>;          Update: Partial<Pick<MembershipRow, 'role'>> }
-      customers:              { Row: CustomerRow;           Insert: Omit<CustomerRow, 'id'|'created_at'>;            Update: Partial<Omit<CustomerRow, 'id'|'shop_id'|'created_at'>> }
+      partners:               { Row: PartnerRow;            Insert: Omit<PartnerRow, 'id'|'created_at'>;             Update: Partial<Omit<PartnerRow, 'id'|'shop_id'|'created_at'>> }
       devices:                { Row: DeviceRow;             Insert: Omit<DeviceRow, 'id'|'created_at'>;              Update: Partial<Omit<DeviceRow, 'id'|'created_at'>> }
       repair_tickets:         { Row: RepairTicketRow;       Insert: Omit<RepairTicketRow, 'id'|'created_at'|'updated_at'>; Update: Partial<Omit<RepairTicketRow, 'id'|'shop_id'|'created_at'>> }
       ticket_status_history:  { Row: TicketStatusHistoryRow; Insert: Omit<TicketStatusHistoryRow, 'id'|'changed_at'>; Update: never }
       evidence_logs:          { Row: EvidenceLogRow;        Insert: Omit<EvidenceLogRow, 'id'|'uploaded_at'>;        Update: never }
       inventory_items:        { Row: InventoryItemRow;      Insert: Omit<InventoryItemRow, 'id'|'created_at'>;       Update: Partial<Omit<InventoryItemRow, 'id'|'shop_id'|'created_at'>> }
-      suppliers:              { Row: SupplierRow;           Insert: Omit<SupplierRow, 'id'|'created_at'>;            Update: Partial<Omit<SupplierRow, 'id'|'shop_id'|'created_at'>> }
       transactions:           { Row: TransactionRow;        Insert: Omit<TransactionRow, 'id'|'created_at'>;         Update: Partial<Pick<TransactionRow, 'status'|'paid_at'>> }
       transaction_items:      { Row: TransactionItemRow;    Insert: Omit<TransactionItemRow, 'id'>;                  Update: never }
       expenses:               { Row: ExpenseRow;            Insert: Omit<ExpenseRow, 'id'|'created_at'>;             Update: Partial<Omit<ExpenseRow, 'id'|'shop_id'|'created_at'>> }
@@ -132,7 +127,7 @@ export interface Database {
 
 // ── Joined / Computed types ────────────────────────────────────────────────────
 export interface TicketWithDetails extends RepairTicketRow {
-  device: DeviceRow & { customer: CustomerRow }
+  device: DeviceRow & { partner: PartnerRow }
   assigned_profile: ProfileRow | null
   evidence_count: number
 }
