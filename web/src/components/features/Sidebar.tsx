@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Ticket, Package, BarChart3,
   Receipt, Settings, LogOut, Wrench, ChevronRight,
-  Users, ShoppingCart,
+  Users, ShoppingCart, Landmark, Banknote, ShieldAlert
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -26,24 +26,60 @@ interface NavItem {
   badge?: string
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard',  href: '/dashboard',            icon: LayoutDashboard, roles: ['OWNER','ADMIN','TECHNICIAN'] },
-  { label: 'Direct POS', href: '/dashboard/sales/new',  icon: ShoppingCart,    roles: ['OWNER','ADMIN','TECHNICIAN'] },
-  { label: 'Tickets',    href: '/dashboard/tickets',    icon: Ticket,          roles: ['OWNER','ADMIN','TECHNICIAN'] },
-  { label: 'Inventory',  href: '/dashboard/inventory',  icon: Package,         roles: ['OWNER','ADMIN'] },
-  { label: 'Customers',  href: '/dashboard/customers',  icon: Users,           roles: ['OWNER','ADMIN','TECHNICIAN'] },
-  { label: 'Sales',      href: '/dashboard/sales',      icon: ShoppingCart,    roles: ['OWNER','ADMIN'] },
-  { label: 'Expenses',   href: '/dashboard/expenses',   icon: Receipt,         roles: ['OWNER','ADMIN'] },
-  { label: 'Reports',    href: '/dashboard/reports',    icon: BarChart3,       roles: ['OWNER'] },
-  { label: 'Settings',   href: '/dashboard/settings',   icon: Settings,        roles: ['OWNER'] },
+interface NavSection {
+  title: string
+  items: NavItem[]
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    title: 'Overview',
+    items: [
+      { label: 'Dashboard',  href: '/dashboard',            icon: LayoutDashboard, roles: ['OWNER','ADMIN','TECHNICIAN'] },
+    ]
+  },
+  {
+    title: 'Repairing',
+    items: [
+      { label: 'Tickets',    href: '/dashboard/tickets',    icon: Ticket,          roles: ['OWNER','ADMIN','TECHNICIAN'] },
+    ]
+  },
+  {
+    title: 'Selling',
+    items: [
+      { label: 'Point of Sale',   href: '/dashboard/sales/new',  icon: ShoppingCart,    roles: ['OWNER','ADMIN','TECHNICIAN'] },
+      { label: 'Receipts & History', href: '/dashboard/sales',      icon: Receipt,         roles: ['OWNER','ADMIN'] },
+    ]
+  },
+  {
+    title: 'Operations',
+    items: [
+      { label: 'Inventory',  href: '/dashboard/inventory',  icon: Package,         roles: ['OWNER','ADMIN'] },
+      { label: 'Customers',  href: '/dashboard/customers',  icon: Users,           roles: ['OWNER','ADMIN','TECHNICIAN'] },
+    ]
+  },
+  {
+    title: 'Partners & Finance',
+    items: [
+      { label: 'Suppliers',  href: '/dashboard/suppliers',  icon: Landmark,        roles: ['OWNER','ADMIN'] },
+      { label: 'Payments',   href: '/dashboard/payments',   icon: Banknote,         roles: ['OWNER','ADMIN'] },
+    ]
+  },
+  {
+    title: 'Administration',
+    items: [
+      { label: 'Expenses',   href: '/dashboard/expenses',   icon: Receipt,         roles: ['OWNER','ADMIN'] },
+      { label: 'Reports',    href: '/dashboard/reports',    icon: BarChart3,       roles: ['OWNER'] },
+      { label: 'Settings',   href: '/dashboard/settings',   icon: Settings,        roles: ['OWNER'] },
+      { label: 'Blacklist',  href: '/dashboard/blacklist',  icon: ShieldAlert,     roles: ['OWNER','ADMIN'] },
+    ]
+  }
 ]
 
 export function Sidebar({ role, shopName, userFullName, userAvatarUrl }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-
-  const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(role))
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -64,77 +100,87 @@ export function Sidebar({ role, shopName, userFullName, userAvatarUrl }: Sidebar
     .slice(0, 2)
 
   return (
-    <aside className="w-64 shrink-0 flex flex-col h-full border-r border-border bg-card">
-      {/* Brand */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-border">
-        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-500 shrink-0">
-          <Wrench className="w-5 h-5 text-white" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-foreground truncate">{shopName}</p>
-          <p className="text-xs text-muted-foreground">RepairOS</p>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {visibleItems.map((item) => {
-          const active = isActive(item.href)
-          const Icon = item.icon
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group ${
-                active
-                  ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-              }`}
-            >
-              <Icon className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-brand-500' : 'text-muted-foreground group-hover:text-foreground'}`} />
-              <span className="truncate">{item.label}</span>
-              {item.badge && (
-                <span className="ml-auto text-xs bg-brand-500 text-white px-1.5 py-0.5 rounded-full">{item.badge}</span>
-              )}
-              {active && <ChevronRight className="ml-auto w-3.5 h-3.5 text-brand-500 shrink-0" />}
-            </Link>
-          )
-        })}
-      </nav>
-
-      {/* Role badge */}
-      <div className="px-5 pb-2">
-        <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full ${
-          role === 'OWNER' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-          role === 'ADMIN' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
-          'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-        }`}>{role}</span>
-      </div>
-
-      {/* User profile */}
-      <div className="px-3 pb-4 border-t border-border pt-3">
-        <div className="flex items-center gap-3 px-2 py-2">
-          {/* Avatar */}
-          <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden">
+    <aside className="w-64 shrink-0 flex flex-col h-full border-r border-border bg-card/50 backdrop-blur-xl">
+      {/* Unified Identity Header (User + Shop) */}
+      <div className="px-4 pt-6 pb-4 border-b border-border">
+        <div className="flex items-center gap-3 px-3 py-3 bg-secondary/50 rounded-3xl border border-border/50 backdrop-blur-sm relative group overflow-hidden">
+          {/* Avatar/Icon */}
+          <div className="w-10 h-10 rounded-2xl bg-brand-500 flex items-center justify-center text-white text-sm font-black shrink-0 overflow-hidden shadow-lg shadow-brand-500/20 relative z-10">
             {userAvatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={userAvatarUrl} alt={userFullName} className="w-full h-full object-cover" />
             ) : (
               initials
             )}
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground truncate">{userFullName}</p>
+
+          {/* Identity Info */}
+          <div className="min-w-0 flex-1 relative z-10">
+            <p className="text-sm font-bold text-foreground truncate tracking-tight mb-1">{userFullName}</p>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] font-black text-brand-500 uppercase tracking-widest">{role}</span>
+              </div>
+              <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-tight">
+                {shopName}
+              </p>
+            </div>
           </div>
+
+          {/* Actions */}
           <button
             onClick={handleLogout}
             title="Sign out"
-            className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-lg hover:bg-destructive/10"
+            className="text-muted-foreground hover:text-destructive transition-all p-2 rounded-xl hover:bg-destructive/10 relative z-10"
           >
             <LogOut className="w-4 h-4" />
           </button>
+          
+          {/* Decorative Wrench Background Icon */}
+          <Wrench className="absolute -right-2 -bottom-2 w-12 h-12 text-brand-500/5 rotate-12 pointer-events-none" />
         </div>
       </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-4 py-6 space-y-8 overflow-y-auto">
+        {NAV_SECTIONS.map((section) => {
+          const visibleItems = section.items.filter((item) => item.roles.includes(role))
+          if (visibleItems.length === 0) return null
+
+          return (
+            <div key={section.title} className="space-y-2">
+              <p className="px-4 text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.2em]">
+                {section.title}
+              </p>
+              <div className="space-y-1">
+                {visibleItems.map((item) => {
+                  const active = isActive(item.href)
+                  const Icon = item.icon
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-bold transition-all group ${
+                        active
+                          ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20'
+                          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                      <span className="truncate">{item.label}</span>
+                      {item.badge && (
+                        <span className="ml-auto text-[10px] bg-white text-brand-500 px-2 py-0.5 rounded-full font-black tracking-tighter">
+                          {item.badge}
+                        </span>
+                      )}
+                      {active && <ChevronRight className="ml-auto w-3.5 h-3.5 text-white/60 shrink-0" />}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </nav>
     </aside>
   )
 }

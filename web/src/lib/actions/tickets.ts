@@ -184,3 +184,30 @@ export async function getWhatsAppUpdateLink(ticketId: string, shopName: string) 
 
   return `https://wa.me/${phone}?text=${message}`
 }
+
+// ── Update additional charges ────────────────────────────────────────────────
+export async function updateAdditionalCharges(ticketId: string, charges: { description: string; amount: number }[]) {
+  const supabase = await createServerClient()
+  
+  // First get current metadata
+  const { data: ticket } = await supabase
+    .from('repair_tickets')
+    .select('metadata')
+    .eq('id', ticketId)
+    .single()
+
+  const currentMetadata = (ticket?.metadata as any) || {}
+  
+  const { error } = await supabase
+    .from('repair_tickets')
+    .update({ 
+      metadata: { 
+        ...currentMetadata,
+        additional_charges: charges 
+      } 
+    })
+    .eq('id', ticketId)
+
+  if (error) throw new Error(error.message)
+  revalidatePath(`/dashboard/tickets/${ticketId}`)
+}
