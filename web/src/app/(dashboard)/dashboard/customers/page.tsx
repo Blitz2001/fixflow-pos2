@@ -110,6 +110,7 @@ export default async function CustomersPage() {
           </table>
         </div>
       </div>
+
     </div>
   )
 }

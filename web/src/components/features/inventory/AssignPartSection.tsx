@@ -15,11 +15,12 @@ export function AssignPartSection({ ticketId, shopId, currentAssignedSerials }: 
   const [loading, setLoading] = useState(false)
   const [items, setItems] = useState<any[]>([])
   const [selectedItemId, setSelectedItemId] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showResults, setShowResults] = useState(false)
   const [availableSerials, setAvailableSerials] = useState<any[]>([])
   const [selectedSerialId, setSelectedSerialId] = useState('')
 
   useEffect(() => {
-    // Fetch all inventory items that have stock > 0
     supabase
       .from('inventory_items')
       .select('id, name, quantity')
@@ -33,7 +34,6 @@ export function AssignPartSection({ ticketId, shopId, currentAssignedSerials }: 
       setAvailableSerials([])
       return
     }
-    // Fetch available serials for the selected item
     supabase
       .from('serial_numbers')
       .select('id, serial_number')
@@ -42,15 +42,19 @@ export function AssignPartSection({ ticketId, shopId, currentAssignedSerials }: 
       .then(({ data }) => setAvailableSerials(data || []))
   }, [selectedItemId, supabase])
 
+  const filteredItems = items.filter(i => 
+    i.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   const handleAssign = async () => {
     if (!selectedSerialId) return
     setLoading(true)
     try {
       await assignPartToTicket(ticketId, selectedSerialId, shopId)
-      toast.success('Part successfully assigned to ticket!')
+      toast.success('Part successfully assigned!')
       setSelectedItemId('')
       setSelectedSerialId('')
-      // Page will refresh automatically via Server Action revalidatePath
+      setSearchQuery('')
     } catch (e: any) {
       toast.error(e.message || 'Failed to assign part')
     } finally {
@@ -58,80 +62,102 @@ export function AssignPartSection({ ticketId, shopId, currentAssignedSerials }: 
     }
   }
 
-  const totalPartsCost = currentAssignedSerials.reduce((acc, sn) => acc + (sn.item?.sell_price || 0), 0)
+  const selectedItem = items.find(i => i.id === selectedItemId)
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold flex items-center gap-2 mb-4 text-foreground border-b border-border pb-4">
-        <Package className="w-5 h-5 text-brand-500" /> Assigned Parts
+    <div className="bg-white dark:bg-card border border-border rounded-2xl p-5 shadow-sm">
+      <h2 className="text-xs font-black text-foreground uppercase tracking-widest flex items-center gap-2 mb-4">
+        <Package className="w-5 h-5 text-brand-500" /> Inventory Parts
       </h2>
 
       {/* List assigned parts */}
-      <div className="space-y-3 mb-6">
+      <div className="space-y-3 mb-5">
         {currentAssignedSerials.length > 0 ? (
           currentAssignedSerials.map((sn) => (
-            <div key={sn.id} className="flex items-center justify-between bg-accent/30 p-3 rounded-xl border border-border/50">
+            <div key={sn.id} className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border border-border/50">
               <div>
-                <p className="font-medium text-foreground text-sm">{sn.item?.name}</p>
-                <p className="font-mono text-xs text-muted-foreground mt-0.5">SN: {sn.serial_number}</p>
+                <p className="font-bold text-foreground text-sm">{sn.item?.name}</p>
+                <p className="font-mono text-xs text-muted-foreground">SN: {sn.serial_number}</p>
               </div>
-              <span className="font-semibold text-brand-500 text-sm">+{sn.item?.sell_price} LKR</span>
+              <span className="font-bold text-brand-500 text-sm">+{sn.item?.sell_price}</span>
             </div>
           ))
         ) : (
-          <p className="text-sm text-muted-foreground italic">No parts assigned to this repair yet.</p>
-        )}
-        
-        {currentAssignedSerials.length > 0 && (
-          <div className="flex justify-between items-center pt-3 border-t border-border mt-2">
-            <span className="text-sm font-medium text-foreground">Total Parts Cost</span>
-            <span className="font-bold text-foreground">{totalPartsCost} LKR</span>
-          </div>
+          <p className="text-sm text-muted-foreground italic text-center py-4">No parts assigned.</p>
         )}
       </div>
 
       {/* Add new part form */}
-      <div className="space-y-3 bg-background p-4 rounded-xl border border-border">
-        <h3 className="text-sm font-medium text-foreground">Use a Part from Inventory</h3>
-        
+      <div className="space-y-3 pt-5 border-t border-border border-dashed relative">
         <div className="grid gap-3">
-          <select 
-            className="w-full px-3 py-2 bg-accent/50 border border-border rounded-xl focus:ring-2 focus:ring-brand-500 text-sm"
-            value={selectedItemId}
-            onChange={(e) => {
-              setSelectedItemId(e.target.value)
-              setSelectedSerialId('')
-            }}
-          >
-            <option value="">-- Select Item Type --</option>
-            {items.map(i => (
-              <option key={i.id} value={i.id}>{i.name} ({i.quantity} in stock)</option>
-            ))}
-          </select>
+          <div className="relative">
+            <input 
+              type="text"
+              placeholder="Search item name (e.g. iPhone Screen)"
+              className="w-full px-4 py-3 bg-muted/50 border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all font-medium"
+              value={selectedItem ? selectedItem.name : searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                if (selectedItemId) {
+                  setSelectedItemId('')
+                  setSelectedSerialId('')
+                }
+                setShowResults(true)
+              }}
+              onFocus={() => setShowResults(true)}
+            />
+            
+            {showResults && searchQuery && !selectedItemId && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-card border border-border rounded-2xl shadow-2xl z-30 max-h-48 overflow-y-auto overflow-x-hidden animate-in fade-in zoom-in-95 duration-200">
+                {filteredItems.length > 0 ? (
+                  filteredItems.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setSelectedItemId(item.id)
+                        setShowResults(false)
+                        setSearchQuery('')
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted transition-colors border-b border-border/50 last:border-0"
+                    >
+                      <span className="text-sm font-bold text-foreground">{item.name}</span>
+                      <span className="text-[10px] bg-brand-500/10 text-brand-500 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">
+                        {item.quantity} In Stock
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-sm text-muted-foreground italic">No matches found.</div>
+                )}
+              </div>
+            )}
+          </div>
 
           {availableSerials.length > 0 && (
-            <select 
-              className="w-full px-3 py-2 bg-accent/50 border border-border rounded-xl focus:ring-2 focus:ring-brand-500 font-mono text-sm"
-              value={selectedSerialId}
-              onChange={(e) => setSelectedSerialId(e.target.value)}
-            >
-              <option value="">-- Select Serial Number --</option>
-              {availableSerials.map(sn => (
-                <option key={sn.id} value={sn.id}>{sn.serial_number}</option>
-              ))}
-            </select>
+            <div className="animate-in slide-in-from-top-2">
+              <select 
+                className="w-full px-3 py-3 bg-muted/50 border border-border rounded-xl text-sm font-mono outline-none focus:ring-2 focus:ring-brand-500 transition-all cursor-pointer"
+                value={selectedSerialId}
+                onChange={(e) => setSelectedSerialId(e.target.value)}
+              >
+                <option value="">-- Select Serial Number --</option>
+                {availableSerials.map(sn => (
+                  <option key={sn.id} value={sn.id}>{sn.serial_number}</option>
+                ))}
+              </select>
+            </div>
           )}
 
           <button 
             onClick={handleAssign}
             disabled={!selectedSerialId || loading}
-            className="w-full py-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 text-sm mt-1"
+            className="w-full flex items-center justify-center gap-2 py-4 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-black rounded-xl text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand-500/20"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Assign to Ticket
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+            Assign to Repair
           </button>
         </div>
       </div>
-
     </div>
   )
 }
