@@ -5,6 +5,8 @@ import {
   Clock, CheckCircle2, Wrench, ArrowUpRight,
 } from 'lucide-react'
 import Link from 'next/link'
+import { TimeClockAction } from '@/components/features/hr/TimeClockAction'
+import { ShopSessionWidget } from '@/components/features/shop/ShopSessionWidget'
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({
@@ -180,6 +182,29 @@ async function RecentTickets() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default async function DashboardPage() {
+  const supabase = await createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data: membership } = await supabase
+    .from('memberships')
+    .select('shop_id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!membership) return null
+
+  // Fetch today's shop session
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const { data: todaySession } = await supabase
+    .from('shop_sessions')
+    .select('id, opened_at, closed_at')
+    .eq('shop_id', membership.shop_id)
+    .gte('opened_at', today.toISOString())
+    .order('opened_at', { ascending: false })
+    .limit(1)
+    .single()
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -225,6 +250,9 @@ export default async function DashboardPage() {
             <h2 className="font-semibold text-foreground">Quick Actions</h2>
           </div>
           <div className="space-y-2">
+            {/* Shop Session Widget */}
+            <ShopSessionWidget shopId={membership.shop_id} currentSession={todaySession ?? null} />
+
             {[
               { label: 'New Repair Ticket', href: '/dashboard/tickets/new', icon: Ticket },
               { label: 'Add Inventory Item', href: '/dashboard/inventory/new', icon: Package },
@@ -237,6 +265,8 @@ export default async function DashboardPage() {
                 <ArrowUpRight className="ml-auto w-3.5 h-3.5 text-muted-foreground group-hover:text-brand-500 transition-colors" />
               </Link>
             ))}
+            {/* The new HR Time Clock Kiosk */}
+            <TimeClockAction shopId={membership.shop_id} />
           </div>
         </div>
       </div>

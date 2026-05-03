@@ -12,9 +12,12 @@ export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent'
 export type MembershipRole = 'OWNER' | 'ADMIN' | 'TECHNICIAN'
 export type PaymentType = 'Cash' | 'Bank Transfer' | 'QR' | 'Card'
 export type TransactionType = 'repair_payment' | 'direct_sale' | 'refund'
-export type ExpenseCategory = 'Rent' | 'Salary' | 'Utilities' | 'Parts Purchase' | 'Marketing' | 'Other'
-export type ProductType = 'storable' | 'service' | 'consumable'
 export type LocationType = 'internal' | 'vendor' | 'customer' | 'inventory_loss' | 'scrap'
+
+export type HRRole = 'Technician' | 'Manager' | 'Cashier'
+export type HRPayFrequency = 'DAILY' | 'MONTHLY'
+export type HRAttendanceStatus = 'PRESENT' | 'LATE' | 'LEAVE'
+export type HRCommissionStatus = 'PENDING_WARRANTY' | 'EARNED' | 'PAID'
 
 // ── Table Rows ────────────────────────────────────────────────────────────────
 export interface ShopRow {
@@ -99,10 +102,31 @@ export interface TransactionItemRow {
 }
 
 export interface ExpenseRow {
-  id: string; shop_id: string; category: ExpenseCategory
-  description: string | null; amount: number
-  expense_date: string; receipt_url: string | null
+  id: string; shop_id: string; category: string; description: string | null
+  amount: number; expense_date: string; receipt_url: string | null
   created_by: string | null; created_at: string
+}
+
+export interface ShopSessionRow {
+  id: string; shop_id: string; opened_at: string; closed_at: string | null
+  opened_by: string | null; closed_by: string | null; notes: string | null; created_at: string
+}
+
+export interface HREmployeeRow {
+  id: string; shop_id: string; full_name: string; role: HRRole
+  pay_frequency: HRPayFrequency; base_salary: number; daily_rate: number
+  commission_rate: number; auth_pin: string | null; created_at: string
+}
+
+export interface HRAttendanceRow {
+  id: string; shop_id: string; employee_id: string; check_in: string
+  check_out: string | null; status: HRAttendanceStatus
+  daily_wage_earned: number | null; is_paid: boolean; created_at: string
+}
+
+export interface HRCommissionRow {
+  id: string; shop_id: string; employee_id: string; ticket_id: string
+  amount: number; status: HRCommissionStatus; release_date: string; created_at: string
 }
 
 export interface ActivityLogRow {
@@ -128,6 +152,10 @@ export interface Database {
       transactions:           { Row: TransactionRow;        Insert: Omit<TransactionRow, 'id'|'created_at'>;         Update: Partial<Pick<TransactionRow, 'status'|'paid_at'>> }
       transaction_items:      { Row: TransactionItemRow;    Insert: Omit<TransactionItemRow, 'id'>;                  Update: never }
       expenses:               { Row: ExpenseRow;            Insert: Omit<ExpenseRow, 'id'|'created_at'>;             Update: Partial<Omit<ExpenseRow, 'id'|'shop_id'|'created_at'>> }
+      hr_employees:           { Row: HREmployeeRow;         Insert: Omit<HREmployeeRow, 'id'|'created_at'>;          Update: Partial<Omit<HREmployeeRow, 'id'|'shop_id'|'created_at'>> }
+      hr_attendance:          { Row: HRAttendanceRow;       Insert: Omit<HRAttendanceRow, 'id'|'created_at'>;        Update: Partial<Omit<HRAttendanceRow, 'id'|'shop_id'|'created_at'>> }
+      hr_commissions:         { Row: HRCommissionRow;       Insert: Omit<HRCommissionRow, 'id'|'created_at'>;        Update: Partial<Omit<HRCommissionRow, 'id'|'shop_id'|'created_at'>> }
+      shop_sessions:          { Row: ShopSessionRow;        Insert: Omit<ShopSessionRow, 'id'|'created_at'>;         Update: Partial<Pick<ShopSessionRow, 'closed_at'|'closed_by'|'notes'>> }
       activity_logs:          { Row: ActivityLogRow;        Insert: Omit<ActivityLogRow, 'id'|'created_at'>;         Update: never }
     }
     Views: { [_ in never]: never }

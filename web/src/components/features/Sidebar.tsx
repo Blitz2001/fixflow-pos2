@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Ticket, Package, BarChart3,
   Receipt, Settings, LogOut, Wrench, ChevronRight,
-  Users, ShoppingCart, Landmark, Banknote, ShieldAlert
+  Users, ShoppingCart, Landmark, Banknote, ShieldAlert, Users2
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -68,6 +68,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Administration',
     items: [
+      { label: 'Staff',      href: '/dashboard/staff',      icon: Users2,          roles: ['OWNER', 'ADMIN'] },
       { label: 'Expenses',   href: '/dashboard/expenses',   icon: Receipt,         roles: ['OWNER','ADMIN'] },
       { label: 'Reports',    href: '/dashboard/reports',    icon: BarChart3,       roles: ['OWNER'] },
       { label: 'Settings',   href: '/dashboard/settings',   icon: Settings,        roles: ['OWNER'] },
