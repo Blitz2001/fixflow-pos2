@@ -111,3 +111,116 @@ export async function addEmployee(formData: FormData, shopId: string) {
 
   revalidatePath('/dashboard/staff')
 }
+
+// ── Mark a single attendance record as paid ───────────────────────────────────
+export async function markAttendancePaid(attendanceId: string, shopId: string) {
+  const supabase = await createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  // Fetch the attendance + employee for expense logging
+  const { data: att } = await supabase
+    .from('hr_attendance')
+    .select('*, employee:hr_employees(full_name, shop_id)')
+    .eq('id', attendanceId)
+    .single()
+
+  if (!att || (att.employee as any).shop_id !== shopId) throw new Error('Not found')
+  if (att.is_paid) throw new Error('Already paid')
+
+  const amount = att.daily_wage_earned ?? 0
+  const empName = (att.employee as any).full_name
+  const date = new Date(att.check_in).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+
+  // 1. Mark as paid
+  await supabase.from('hr_attendance').update({ is_paid: true }).eq('id', attendanceId)
+
+  // 2. Auto-log expense
+  if (amount > 0) {
+    await supabase.from('expenses').insert({
+      shop_id: shopId,
+      category: 'Staff Wages (Daily)',
+      description: `Daily payout for ${empName} — ${date}`,
+      amount,
+      expense_date: new Date(att.check_in).toISOString().split('T')[0],
+      created_by: user.id,
+    })
+  }
+
+  revalidatePath(`/dashboard/staff`)
+}
+
+// ── Mark ALL unpaid attendance for an employee as paid ────────────────────────
+export async function markAllUnpaidPaid(employeeId: string, shopId: string) {
+  const supabase = await createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: emp } = await supabase
+    .from('hr_employees')
+    .select('full_name')
+    .eq('id', employeeId)
+    .eq('shop_id', shopId)
+    .single()
+  if (!emp) throw new Error('Employee not found')
+
+  const { data: unpaid } = await supabase
+    .from('hr_attendance')
+    .select('id, daily_wage_earned, check_in')
+    .eq('employee_id', employeeId)
+    .eq('is_paid', false)
+    .not('check_out', 'is', null)
+
+  if (!unpaid?.length) throw new Error('No unpaid records found')
+
+  const totalAmount = unpaid.reduce((s, a) => s + (a.daily_wage_earned ?? 0), 0)
+
+  // Mark all as paid
+  await supabase.from('hr_attendance')
+    .update({ is_paid: true })
+    .eq('employee_id', employeeId)
+    .eq('is_paid', false)
+
+  // Single bulk expense entry
+  if (totalAmount > 0) {
+    await supabase.from('expenses').insert({
+      shop_id: shopId,
+      category: 'Staff Wages (Daily)',
+      description: `Bulk payout for ${emp.full_name} (${unpaid.length} days)`,
+      amount: totalAmount,
+      expense_date: new Date().toISOString().split('T')[0],
+      created_by: user.id,
+    })
+  }
+
+  revalidatePath(`/dashboard/staff`)
+  return { totalAmount, days: unpaid.length }
+}
+
+// ── Delete an employee ────────────────────────────────────────────────────────
+export async function deleteEmployee(employeeId: string, shopId: string) {
+  const supabase = await createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: membership } = await supabase
+    .from('memberships')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('shop_id', shopId)
+    .single()
+
+  if (membership?.role !== 'OWNER' && membership?.role !== 'ADMIN') {
+    throw new Error('Only owners and admins can delete staff.')
+  }
+
+  const { error } = await supabase
+    .from('hr_employees')
+    .delete()
+    .eq('id', employeeId)
+    .eq('shop_id', shopId)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/dashboard/staff')
+}

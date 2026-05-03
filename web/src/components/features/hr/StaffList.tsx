@@ -9,6 +9,7 @@ import {
   Briefcase, DollarSign, Shield
 } from 'lucide-react'
 import { TimeClockAction } from './TimeClockAction'
+import Link from 'next/link'
 
 type EmployeeWithAttendance = HREmployeeRow & {
   today_attendance?: HRAttendanceRow | null
@@ -79,7 +80,9 @@ export function StaffList({ employees, shopId }: StaffListProps) {
           {employees.map((emp) => {
             const isClockedIn = emp.today_attendance && !emp.today_attendance.check_out
             return (
-              <div key={emp.id} className="bg-card border border-border rounded-2xl p-5 space-y-4 hover:shadow-md transition-shadow">
+              <Link key={emp.id} href={`/dashboard/staff/${emp.id}`}
+                className="bg-card border border-border rounded-2xl p-5 space-y-4 hover:shadow-md hover:border-brand-200 transition-all cursor-pointer block">
+
                 {/* Name & Status */}
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -94,9 +97,7 @@ export function StaffList({ employees, shopId }: StaffListProps) {
                     </div>
                   </div>
                   <div className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${
-                    isClockedIn
-                      ? 'bg-emerald-500/10 text-emerald-600'
-                      : 'bg-muted text-muted-foreground'
+                    isClockedIn ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${isClockedIn ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground/40'}`} />
                     {isClockedIn ? 'Clocked In' : 'Off Shift'}
@@ -123,14 +124,13 @@ export function StaffList({ employees, shopId }: StaffListProps) {
                       <p className="text-sm font-bold text-emerald-600 mt-0.5">{(emp.commission_rate * 100).toFixed(0)}% of labor</p>
                     </div>
                   )}
-                  {emp.auth_pin && (
+                  {emp.auth_pin ? (
                     <div className="col-span-2 flex items-center gap-2">
                       <Shield className="w-3.5 h-3.5 text-muted-foreground" />
                       <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest">Clock-In PIN:</p>
                       <p className="text-sm font-mono font-bold text-foreground">{emp.auth_pin}</p>
                     </div>
-                  )}
-                  {!emp.auth_pin && (
+                  ) : (
                     <div className="col-span-2">
                       <p className="text-xs text-amber-600 font-semibold">⚠ No PIN set — cannot use Time Clock</p>
                     </div>
@@ -144,7 +144,7 @@ export function StaffList({ employees, shopId }: StaffListProps) {
                     <span>Clocked in at {new Date(emp.today_attendance.check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 )}
-              </div>
+              </Link>
             )
           })}
         </div>
@@ -215,18 +215,24 @@ export function StaffList({ employees, shopId }: StaffListProps) {
                 </div>
               </div>
 
-              {/* Commission & PIN */}
+              {/* Commission & Required Hours */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Commission Rate (%)</label>
                   <input name="commission_rate" type="number" step="0.01" min="0" max="1" defaultValue="0" placeholder="e.g. 0.10 for 10%" className="w-full px-3 py-2.5 bg-muted/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Clock-In PIN</label>
-                  <div className="relative">
-                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input name="auth_pin" type="password" maxLength={4} minLength={4} pattern="\d{4}" placeholder="4-digit PIN" className="w-full pl-9 pr-4 py-2.5 bg-muted/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
-                  </div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Required Hours/Day</label>
+                  <input name="required_hours" type="number" step="0.5" min="1" max="24" defaultValue="8" className="w-full px-3 py-2.5 bg-muted/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                </div>
+              </div>
+
+              {/* PIN */}
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Clock-In PIN</label>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input name="auth_pin" type="password" maxLength={4} minLength={4} pattern="\d{4}" placeholder="4-digit PIN" className="w-full pl-9 pr-4 py-2.5 bg-muted/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
                 </div>
               </div>
 
