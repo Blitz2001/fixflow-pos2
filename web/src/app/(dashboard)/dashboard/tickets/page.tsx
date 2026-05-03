@@ -35,20 +35,26 @@ export default async function TicketsPage() {
   const typedTickets = (tickets ?? []) as unknown as TicketCardData[]
 
   return (
-    <div className="space-y-6 animate-fade-in h-[calc(100vh-48px)] flex flex-col">
-      <div className="flex items-center justify-between shrink-0">
+    <div className="animate-fade-in h-[calc(100vh-16px)] flex flex-col -mx-2 -mt-2 overflow-hidden">
+      {/* Header - Minimal height */}
+      <div className="flex items-center justify-between px-6 py-4 bg-white/50 dark:bg-card/50 backdrop-blur-sm border-b border-border shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Repair Tickets</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">Drag and drop to update statuses</p>
+          <h1 className="text-xl font-black text-foreground tracking-tight">Repair Tickets</h1>
+          <p className="text-muted-foreground text-[10px] font-black uppercase tracking-widest opacity-60">Status Board</p>
         </div>
-        <Link href="/dashboard/tickets/new"
-          className="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm">
-          <Plus className="w-4 h-4" /> New Ticket
-        </Link>
+        <div className="flex items-center gap-4">
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+            {typedTickets.length} Active Repairs
+          </p>
+          <Link href="/dashboard/tickets/new"
+            className="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-brand-500/20 active:scale-95">
+            <Plus className="w-4 h-4" /> New Ticket
+          </Link>
+        </div>
       </div>
       
-      {/* Kanban Board takes remaining height */}
-      <div className="flex-1 min-h-0 -mx-6 px-6">
+      {/* Kanban Board - Fills everything else */}
+      <div className="flex-1 min-h-0">
         <KanbanBoard initialTickets={typedTickets} />
       </div>
     </div>
