@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Store, Users, Activity, Database,
-  Shield, LogOut, ChevronRight, Zap, Globe,
+  Shield, LogOut, ChevronRight, Zap, Globe, FileSpreadsheet
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { label: 'All Users', href: '/superadmin/users', icon: Users },
   { label: 'Traffic Monitor', href: '/superadmin/traffic', icon: Activity },
   { label: 'Database Usage', href: '/superadmin/database', icon: Database },
+  { label: 'Data Exports', href: '/superadmin/exports', icon: FileSpreadsheet },
 ]
 
 export function SuperAdminSidebar({ userEmail, userName, userAvatarUrl }: Props) {
