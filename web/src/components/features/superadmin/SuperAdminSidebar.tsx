@@ -46,22 +46,22 @@ export function SuperAdminSidebar({ userEmail, userName, userAvatarUrl }: Props)
     .slice(0, 2)
 
   return (
-    <aside className="w-72 shrink-0 flex flex-col h-full border-r border-white/[0.06] bg-[#0c0c16]/80 backdrop-blur-2xl">
+    <aside className="w-80 shrink-0 flex flex-col h-full border-r border-white/10 bg-[#1e293b]/40 backdrop-blur-2xl">
       {/* Brand Header */}
-      <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-            <Shield className="w-5 h-5 text-white" />
+      <div className="px-8 pt-10 pb-8 border-b border-white/5">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-[#2d4356]/10 backdrop-blur-md border border-[#2d4356]/20 flex items-center justify-center">
+            <Shield className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-white tracking-tight">RepairOS</h1>
-            <p className="text-[10px] font-bold text-violet-400 uppercase tracking-[0.15em]">Super Admin</p>
+            <h1 className="text-xl font-black text-white tracking-tighter uppercase italic">FixFlow <span className="opacity-50">POS</span></h1>
+            <p className="text-[10px] font-black text-brand-400 uppercase tracking-[0.2em]">Platform Control</p>
           </div>
         </div>
 
         {/* User Card */}
-        <div className="flex items-center gap-3 px-3 py-3 bg-white/[0.04] rounded-2xl border border-white/[0.06]">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
+        <div className="flex items-center gap-4 px-4 py-4 bg-white/5 rounded-[1.5rem] border border-white/10 shadow-xl">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden shadow-lg shadow-brand-500/20">
             {userAvatarUrl ? (
               <img src={userAvatarUrl} alt={userName} className="w-full h-full object-cover" />
             ) : (
@@ -69,13 +69,13 @@ export function SuperAdminSidebar({ userEmail, userName, userAvatarUrl }: Props)
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-white truncate">{userName}</p>
-            <p className="text-[10px] text-white/40 truncate">{userEmail}</p>
+            <p className="text-sm font-bold text-white truncate tracking-tight">{userName}</p>
+            <p className="text-[10px] text-white/40 truncate font-medium">{userEmail}</p>
           </div>
           <button
             onClick={handleLogout}
             title="Sign out"
-            className="text-white/30 hover:text-red-400 transition-all p-1.5 rounded-lg hover:bg-red-400/10"
+            className="text-white/20 hover:text-white transition-all p-1.5 rounded-lg hover:bg-white/5"
           >
             <LogOut className="w-4 h-4" />
           </button>
@@ -83,9 +83,9 @@ export function SuperAdminSidebar({ userEmail, userName, userAvatarUrl }: Props)
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-        <p className="px-4 text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-3">
-          Platform Control
+      <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
+        <p className="px-4 text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">
+          Terminal Access
         </p>
         {NAV_ITEMS.map(item => {
           const active = isActive(item.href)
@@ -94,32 +94,32 @@ export function SuperAdminSidebar({ userEmail, userName, userAvatarUrl }: Props)
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all group ${
+              className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 group ${
                 active
-                  ? 'bg-gradient-to-r from-violet-500/20 to-fuchsia-500/10 text-violet-300 border border-violet-500/20 shadow-lg shadow-violet-500/5'
-                  : 'text-white/50 hover:bg-white/[0.04] hover:text-white/80'
+                  ? 'bg-white/10 text-white border border-white/10 shadow-2xl backdrop-blur-md'
+                  : 'text-white/40 hover:bg-white/5 hover:text-white/80'
               }`}
             >
-              <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-violet-400' : 'text-white/30 group-hover:text-white/60'}`} />
-              <span className="truncate">{item.label}</span>
-              {active && <ChevronRight className="ml-auto w-3.5 h-3.5 text-violet-400/60 shrink-0" />}
+              <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-brand-400' : 'text-white/20 group-hover:text-white/40'}`} />
+              <span className="truncate tracking-tight">{item.label}</span>
+              {active && <ChevronRight className="ml-auto w-4 h-4 text-brand-400/60 shrink-0" />}
             </Link>
           )
         })}
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-white/[0.06]">
+      <div className="px-6 py-6 border-t border-white/5">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white/70 hover:bg-white/[0.04] transition-all"
+          className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-white/30 hover:text-white/60 hover:bg-white/5 transition-all"
         >
           <Globe className="w-4 h-4" />
-          <span>Back to Shop Panel</span>
+          <span className="tracking-tight">Exit Command Center</span>
         </Link>
-        <div className="mt-3 flex items-center gap-2 px-4">
-          <Zap className="w-3 h-3 text-violet-500" />
-          <span className="text-[10px] text-white/20 font-medium">Platform v1.0</span>
+        <div className="mt-4 flex items-center gap-2 px-4 opacity-20">
+          <Zap className="w-3 h-3 text-brand-400" />
+          <span className="text-[10px] text-white font-black uppercase tracking-widest">FixFlow v1.0</span>
         </div>
       </div>
     </aside>
