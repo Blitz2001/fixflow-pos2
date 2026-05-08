@@ -17,13 +17,20 @@ export async function middleware(request: NextRequest) {
 
   // Guard: dashboard requires auth
   if (pathname.startsWith('/dashboard') && !user) {
-    const url = new URL('/login', request.url)
+    const url = new URL('/auth/login', request.url)
     url.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(url)
   }
 
-  // Guard: logged-in users skip auth pages
-  if ((pathname === '/login' || pathname === '/signup') && user) {
+  // Guard: logged-in users skip auth pages or land on root
+  if ((pathname === '/auth/login' || pathname === '/auth/signup' || pathname === '/') && user) {
+    const allowedEmails = (process.env.SUPER_ADMIN_EMAILS ?? '')
+      .split(',')
+      .map(e => e.trim().toLowerCase())
+
+    if (allowedEmails.includes(user.email?.toLowerCase() ?? '')) {
+      return NextResponse.redirect(new URL('/superadmin', request.url))
+    }
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

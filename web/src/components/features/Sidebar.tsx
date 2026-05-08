@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Ticket, Package, BarChart3,
   Receipt, Settings, LogOut, Wrench, ChevronRight,
-  Users, ShoppingCart, Landmark, Banknote, ShieldAlert
+  Users, ShoppingCart, Landmark, Banknote, ShieldAlert,
+  MessageSquare
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -72,6 +73,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Reports',    href: '/dashboard/reports',    icon: BarChart3,       roles: ['OWNER'] },
       { label: 'Settings',   href: '/dashboard/settings',   icon: Settings,        roles: ['OWNER'] },
       { label: 'Blacklist',  href: '/dashboard/blacklist',  icon: ShieldAlert,     roles: ['OWNER','ADMIN'] },
+      { label: 'Customer Support', href: '/dashboard/support', icon: MessageSquare,   roles: ['OWNER','ADMIN','TECHNICIAN'] },
     ]
   }
 ]
@@ -84,7 +86,7 @@ export function Sidebar({ role, shopName, userFullName, userAvatarUrl }: Sidebar
   const handleLogout = async () => {
     await supabase.auth.signOut()
     toast.success('Signed out')
-    router.push('/login')
+    router.push('/auth/login')
     router.refresh()
   }
 

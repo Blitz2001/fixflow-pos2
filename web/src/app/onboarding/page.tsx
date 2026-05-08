@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,11 +27,31 @@ export default function OnboardingPage() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<Form>({ resolver: zodResolver(schema) })
 
+  // Guard: Protect onboarding from Super Admin users who own the entire system
+  useEffect(() => {
+    async function checkUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const email = user.email?.toLowerCase() ?? ''
+        if (email === 'akilainduwara205@gmail.com' || email === 'admin@repairos.com') {
+          toast.error('Super Admins cannot create or belong to shop instances.')
+          router.push('/superadmin')
+        }
+      }
+    }
+    checkUser()
+  }, [router, supabase])
+
   const onSubmit = async ({ name, phone, address }: Form) => {
     setLoading(true)
     try {
       const { data: { user }, error: userErr } = await supabase.auth.getUser()
       if (userErr || !user) throw new Error('Not authenticated')
+
+      const email = user.email?.toLowerCase() ?? ''
+      if (email === 'akilainduwara205@gmail.com' || email === 'admin@repairos.com') {
+        throw new Error('Super Admins are system owners and cannot create individual shop nodes.')
+      }
 
       // 1. Create shop and owner membership atomically via RPC
       const { data: shopId, error: shopErr } = await supabase.rpc('create_shop_with_owner', {
