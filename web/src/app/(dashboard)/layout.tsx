@@ -21,7 +21,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .limit(1)
     .single()
 
-  if (!membership) redirect('/onboarding')
+  if (!membership) {
+    const allowedEmails = (process.env.SUPER_ADMIN_EMAILS ?? '')
+      .split(',')
+      .map(e => e.trim().toLowerCase())
+
+    if (allowedEmails.includes(user.email?.toLowerCase() ?? '')) {
+      redirect('/superadmin')
+    }
+    redirect('/onboarding')
+  }
 
   const { data: profile } = await supabase
     .from('profiles')

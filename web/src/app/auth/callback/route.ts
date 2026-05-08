@@ -23,6 +23,15 @@ export async function GET(request: Request) {
       // Check if the user already belongs to a shop
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        // Guard: If the user is a Super Admin, redirect directly to /superadmin
+        const allowedEmails = (process.env.SUPER_ADMIN_EMAILS ?? '')
+          .split(',')
+          .map(e => e.trim().toLowerCase())
+
+        if (allowedEmails.includes(user.email?.toLowerCase() ?? '')) {
+          return NextResponse.redirect(`${origin}/superadmin`)
+        }
+
         const { data: memberships } = await supabase
           .from('memberships')
           .select('id')
@@ -39,5 +48,5 @@ export async function GET(request: Request) {
   }
 
   // If code is missing or exchange failed → back to login with error
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`)
+  return NextResponse.redirect(`${origin}/auth/login?error=auth_callback_failed`)
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { 
   Store, Users, Ticket, ShoppingCart, 
   TrendingUp, Database, Activity, Shield 
@@ -151,6 +152,24 @@ export default function SuperAdminDashboard() {
       <Suspense fallback={<div className="h-96 bg-slate-900/60 border border-white/10 rounded-[2.5rem] animate-pulse backdrop-blur-xl" />}>
         <RealWorldMetrics />
       </Suspense>
+=======
+import { getPlatformStats, getRecentActivity } from '@/lib/actions/superadmin'
+import SuperAdminDashboardWorkspace from '@/components/features/superadmin/SuperAdminDashboardWorkspace'
+
+export const dynamic = 'force-dynamic'
+
+export default async function SuperAdminDashboardPage() {
+  // Fetch fresh 100% database-backed stats on server startup
+  const initialStats = await getPlatformStats()
+  const initialActivities = await getRecentActivity()
+
+  return (
+    <div className="space-y-6">
+      <SuperAdminDashboardWorkspace 
+        initialStats={initialStats} 
+        initialActivities={initialActivities} 
+      />
+>>>>>>> akila
     </div>
   )
 }
