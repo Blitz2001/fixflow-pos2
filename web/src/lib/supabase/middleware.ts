@@ -10,7 +10,7 @@ export function createMiddlewareClient(req: NextRequest, res: NextResponse) {
     {
       cookies: {
         getAll: () => req.cookies.getAll(),
-        setAll: (toSet) => {
+        setAll: (toSet: { name: string; value: string; options: any }[]) => {
           toSet.forEach(({ name, value }) => req.cookies.set(name, value))
           toSet.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
         },

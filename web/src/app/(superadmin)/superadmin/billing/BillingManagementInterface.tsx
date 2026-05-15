@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { 
   CreditCard, TrendingUp, AlertCircle, 
-  Search, DollarSign, Clock, ArrowUpRight
+  Search, DollarSign, Clock, ArrowUpRight, RefreshCw
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import RevenueChart from '@/components/features/superadmin/RevenueChart'
@@ -109,11 +109,13 @@ export default function BillingManagementInterface({ data }: { data: any }) {
                   <tr 
                     key={inv.id} 
                     onClick={() => handleNavigate(inv.shopId)}
-                    className={`group hover:bg-slate-50 transition-all border-b border-slate-50 last:border-0 cursor-pointer ${
-                      navigatingId === inv.shopId ? 'animate-pulse bg-slate-50 opacity-60' : ''
+                    className={`group hover:bg-slate-50 transition-all border-b border-slate-50 last:border-0 cursor-pointer relative ${
+                      navigatingId === inv.shopId ? 'scale-[0.98] opacity-70 z-50 ring-2 ring-brand-500/10' : ''
                     }`}
                   >
-                    <td className="py-4 font-bold text-slate-400 group-hover:text-slate-600">{inv.id}</td>
+                    <td className="py-4 font-bold text-slate-400 group-hover:text-slate-600">
+                      {navigatingId === inv.shopId ? <RefreshCw className="w-3 h-3 animate-spin text-brand-600" /> : inv.id}
+                    </td>
                     <td className="py-4">
                       <p className="font-black text-slate-900 group-hover:text-brand-600 transition-colors">{inv.shop}</p>
                       <p className="text-[8px] text-brand-600 font-black uppercase tracking-[0.1em] mt-0.5">{inv.plan}</p>
@@ -146,8 +148,8 @@ export default function BillingManagementInterface({ data }: { data: any }) {
                 <div 
                   key={i} 
                   onClick={() => handleNavigate(sub.shopId)}
-                  className={`flex items-center justify-between p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100 hover:bg-slate-100/80 hover:border-slate-200 transition-all cursor-pointer group/item ${
-                    navigatingId === sub.shopId ? 'animate-pulse opacity-60 border-brand-500' : ''
+                  className={`flex items-center justify-between p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100 hover:bg-slate-100/80 hover:border-slate-200 transition-all cursor-pointer group/item relative ${
+                    navigatingId === sub.shopId ? 'scale-[0.98] opacity-70 border-brand-500 ring-2 ring-brand-500/10 z-50' : ''
                   }`}
                 >
                   <div className="min-w-0">
@@ -155,8 +157,14 @@ export default function BillingManagementInterface({ data }: { data: any }) {
                     <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest mt-0.5">{sub.plan}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className={`text-[10px] font-black ${sub.days <= 0 ? 'text-rose-600' : 'text-amber-600'}`}>{sub.days <= 0 ? 'Expired' : `In ${sub.days}d`}</p>
-                    <ArrowUpRight className="w-3 h-3 text-slate-300 ml-auto mt-0.5 group-hover/item:text-brand-500 group-hover/item:translate-x-0.5 group-hover/item:-translate-y-0.5 transition-all" />
+                    {navigatingId === sub.shopId ? (
+                      <RefreshCw className="w-3.5 h-3.5 text-brand-600 animate-spin ml-auto" />
+                    ) : (
+                      <>
+                        <p className={`text-[10px] font-black ${sub.days <= 0 ? 'text-rose-600' : 'text-amber-600'}`}>{sub.days <= 0 ? 'Expired' : `In ${sub.days}d`}</p>
+                        <ArrowUpRight className="w-3 h-3 text-slate-300 ml-auto mt-0.5 group-hover/item:text-brand-500 group-hover/item:translate-x-0.5 group-hover/item:-translate-y-0.5 transition-all" />
+                      </>
+                    )}
                   </div>
                 </div>
               ))}

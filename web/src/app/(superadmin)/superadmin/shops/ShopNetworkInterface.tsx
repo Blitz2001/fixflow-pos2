@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Search, Filter, Plus, Store, Users, Activity, ShieldCheck, Database,
   RefreshCw
 } from 'lucide-react'
 import ShopActions from '@/components/features/superadmin/ShopActions'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { getShopsWithPulse } from '@/lib/actions/superadmin-ops'
 
 interface Shop {
   id: string
@@ -27,16 +29,45 @@ interface Props {
 }
 
 export default function ShopNetworkInterface({ initialShops }: Props) {
+  const [shops, setShops] = useState<Shop[]>(initialShops)
   const [search, setSearch] = useState('')
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
   const router = useRouter()
   
+  useEffect(() => {
+    const supabase = createClient()
+    
+    async function refresh() {
+      setRefreshing(true)
+      try {
+        const liveShops = await getShopsWithPulse()
+        setShops(liveShops)
+      } catch (err) {
+        console.error('Pulse refresh failed:', err)
+      } finally {
+        setRefreshing(false)
+      }
+    }
+
+    const channel = supabase
+      .channel('shop-pulse')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shops' }, refresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'memberships' }, refresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_tickets' }, refresh)
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
   const handleNavigate = (id: string) => {
     setNavigatingId(id)
     router.push(`/superadmin/shops/${id}`)
   }
 
-  const filteredShops = initialShops.filter(shop => 
+  const filteredShops = shops.filter(shop => 
     shop.name.toLowerCase().includes(search.toLowerCase()) ||
     shop.owner?.name.toLowerCase().includes(search.toLowerCase()) ||
     shop.id.toLowerCase().includes(search.toLowerCase())

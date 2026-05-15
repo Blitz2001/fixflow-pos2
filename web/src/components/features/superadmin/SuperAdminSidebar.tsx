@@ -21,8 +21,8 @@ const NAV_GROUPS = [
     items: [
       { label: 'Dashboard', href: '/superadmin', icon: LayoutDashboard },
       { label: 'Shop Network', href: '/superadmin/shops', icon: Store },
-      { label: 'User Management', href: '/superadmin/users', icon: Users },
-      { label: 'Billing & Finance', href: '/superadmin/billing', icon: CreditCard },
+      { label: 'User Database', href: '/superadmin/users', icon: Users },
+      { label: 'Platform Billing', href: '/superadmin/billing', icon: CreditCard },
       { label: 'Support Tickets', href: '/superadmin/tickets', icon: LifeBuoy },
     ]
   },

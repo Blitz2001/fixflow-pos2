@@ -20,7 +20,7 @@ export default async function SalesPage() {
     .select(`
       *,
       ticket:repair_tickets(ticket_number),
-      customer:customers(name)
+      partner:partners(name)
     `)
     .eq('shop_id', membership.shop_id)
     .order('created_at', { ascending: false })
@@ -111,7 +111,7 @@ export default async function SalesPage() {
                         )}
                       </td>
                       <td className="px-8 py-5 font-black text-foreground">
-                        {txn.customer?.name || <span className="opacity-20">—</span>}
+                        {txn.partner?.name || <span className="opacity-20">—</span>}
                       </td>
                       <td className="px-8 py-5">
                         <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-accent border border-border text-foreground">

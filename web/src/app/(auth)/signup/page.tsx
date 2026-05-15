@@ -54,7 +54,6 @@ export default function SignupPage() {
   }
 
   return (
-  return (
     <div className="relative w-full h-screen overflow-hidden flex flex-col md:flex-row font-sans">
       {/* Background Layer */}
       <img 

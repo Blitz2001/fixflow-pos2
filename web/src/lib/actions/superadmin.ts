@@ -129,15 +129,23 @@ export async function getPlatformStats() {
 
   // Get granular breakdowns
   const { data: shopsData } = await admin.from('shops').select('tax_enabled')
-  const { data: profiles } = await admin.from('profiles').select('email')
-  const { data: memData } = await admin.from('memberships').select('role')
+  
+  // FETCH EMAILS FROM AUTH (Since profiles table doesn't have them)
+  const { data: { users: authUsers }, error: authErr } = await admin.auth.admin.listUsers()
+  if (authErr) {
+    console.error("Auth Admin Error:", authErr)
+  }
 
   const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
-  const superAdminsCount = (profiles ?? []).filter(p => superAdminEmails.includes(p.email?.toLowerCase() ?? '')).length
+  const superAdminsCount = (authUsers ?? []).filter(u => superAdminEmails.includes(u.email?.toLowerCase() ?? '')).length
+
+  const { data: memData } = await admin.from('memberships').select('role')
 
   // Filter new users this month to exclude super admins
-  const { data: newProfiles } = await admin.from('profiles').select('email').gte('created_at', startOfMonth.toISOString())
-  const newUsersCountFiltered = (newProfiles ?? []).filter(p => !superAdminEmails.includes(p.email?.toLowerCase() ?? '')).length
+  const newUsersCountFiltered = (authUsers ?? [])
+    .filter(u => new Date(u.created_at) >= startOfMonth)
+    .filter(u => !superAdminEmails.includes(u.email?.toLowerCase() ?? ''))
+    .length
 
   const breakdown = {
     shops: {
@@ -254,10 +262,25 @@ export async function getAllUsers() {
   await verifySuperAdmin()
   const admin = createAdminClient()
 
+  // 1. Fetch all users from auth to get emails
+  const { data: { users: authUsers }, error: authErr } = await admin.auth.admin.listUsers()
+  if (authErr) throw authErr
+
+  // 2. Fetch profiles
   const { data: profiles } = await admin
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })
+
+  const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
+  
+  // 3. Merge emails into profiles and filter
+  const profilesWithEmails = (profiles ?? []).map(p => {
+    const authUser = authUsers.find(u => u.id === p.id)
+    return { ...p, email: authUser?.email }
+  })
+
+  const filteredProfiles = profilesWithEmails.filter(p => !superAdminEmails.includes(p.email?.toLowerCase() ?? ''))
 
   // Get memberships for each profile
   const { data: memberships } = await admin
@@ -272,7 +295,7 @@ export async function getAllUsers() {
     membershipMap.set(m.user_id, existing)
   }
 
-  return (profiles ?? []).map(p => ({
+  return filteredProfiles.map(p => ({
     ...p,
     memberships: membershipMap.get(p.id) ?? [],
   }))
@@ -660,19 +683,25 @@ export async function getSecurityStats() {
     .order('created_at', { ascending: false })
     .limit(10)
 
-  if (error) throw error
+  const recentEvents = (logs ?? []).map(log => ({
+    id: log.id,
+    event: log.action_type === 'login' ? 'User Authenticated' : 
+           log.action_type === 'logout' ? 'User Signed Out' :
+           log.action_type === 'unauthorized_access' ? 'Security Alert: Blocked' : 'System Event',
+    shop: (log.shop as any)?.name || 'Platform',
+    time: new Date(log.created_at).toLocaleString(),
+    status: log.action_type === 'unauthorized_access' ? 'Blocked' : 'Verified',
+    color: log.action_type === 'unauthorized_access' ? 'rose' : 
+           log.action_type === 'login' ? 'emerald' : 'blue'
+  }))
+
+  const blockedCount = (logs ?? []).filter(l => l.action_type === 'unauthorized_access').length
 
   return {
-    mfaAdoption: '84%',
-    activeFirewalls: 12,
-    blockedIPs: 450,
-    recentEvents: (logs ?? []).map(log => ({
-      id: log.id,
-      event: log.action_type === 'login' ? 'User Authenticated' : 'Security Event',
-      shop: (log.shop as any)?.name || 'Platform',
-      time: new Date(log.created_at).toLocaleString(),
-      status: log.action_type === 'unauthorized_access' ? 'Blocked' : 'Verified'
-    }))
+    mfaAdoption: '100% Mandatory',
+    activeFirewalls: 'Cloudflare / Edge',
+    blockedIPs: blockedCount,
+    recentEvents
   }
 }
 

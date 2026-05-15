@@ -73,7 +73,7 @@ export default async function SecurityCenterPage() {
           </div>
           
           <div className="space-y-2.5 flex-1 overflow-y-auto no-scrollbar">
-            {stats.recentEvents.map((event, i) => (
+            {stats.recentEvents.map((event: any, i: number) => (
               <div key={i} className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-100 rounded-2xl group hover:bg-white hover:border-brand-200 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center border ${
@@ -110,7 +110,7 @@ export default async function SecurityCenterPage() {
                     <div key={i} className="flex items-center justify-between">
                        <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{item.label}</span>
                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${
-                         item.color === 'emerald' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'
+                         item.color === 'emerald' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
                        }`}>{item.status}</span>
                     </div>
                  ))}
@@ -126,6 +126,6 @@ export default async function SecurityCenterPage() {
            </div>
         </div>
       </div>
-    </div>v>
+    </div>
   )
 }

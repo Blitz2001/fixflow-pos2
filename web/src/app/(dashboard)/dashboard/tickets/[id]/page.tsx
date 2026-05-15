@@ -11,6 +11,10 @@ import { StatusSelector } from '@/components/features/tickets/StatusSelector'
 
 import { AdditionalChargesSection } from '@/components/features/tickets/AdditionalChargesSection'
 
+import { RepairChecklist } from '@/components/features/tickets/RepairChecklist'
+
+import { ShareTrackerButton } from '@/components/features/tickets/ShareTrackerButton'
+
 export default async function TicketDetailPage({ params }: TicketDetailPageProps) {
   const { id } = await params
   const supabase = await createServerClient()
@@ -24,7 +28,7 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
         brand,
         model,
         serial_number,
-        customer:customers (name, phone_number, email)
+        partner:partners (name, phone, email)
       ),
       evidence_logs (photo_url),
       assigned_parts:serial_numbers (
@@ -83,6 +87,7 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
         </div>
 
         <div className="flex items-center gap-3">
+          <ShareTrackerButton ticketId={ticket.id} />
           <StatusSelector 
             ticketId={ticket.id} 
             currentStatus={ticket.status} 
@@ -116,6 +121,11 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
               )}
             </div>
           </div>
+
+          <RepairChecklist 
+            ticketId={ticket.id} 
+            initialChecklist={(metadata.repair_checklist as any[]) || []} 
+          />
         </div>
 
         {/* Column 2: Customer & Device */}
@@ -127,8 +137,8 @@ export default async function TicketDetailPage({ params }: TicketDetailPageProps
               </div>
               <div>
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Customer Information</p>
-                <h3 className="text-base font-bold text-foreground">{ticket.device?.customer?.name || 'Unknown'}</h3>
-                <p className="text-sm text-muted-foreground font-medium">{ticket.device?.customer?.phone_number || 'N/A'}</p>
+                <h3 className="text-base font-bold text-foreground">{ticket.device?.partner?.name || 'Unknown'}</h3>
+                <p className="text-sm text-muted-foreground font-medium">{ticket.device?.partner?.phone || 'N/A'}</p>
               </div>
             </div>
             

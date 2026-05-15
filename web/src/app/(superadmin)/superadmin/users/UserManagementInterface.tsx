@@ -93,14 +93,14 @@ export default function UserManagementInterface({ users }: { users: any[] }) {
           >
             {/* Identity */}
             <div className="flex items-center gap-5 min-w-[280px]">
-              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 shadow-inner transition-all relative">
                 {navigatingId === user.id ? (
                   <RefreshCw className="w-5 h-5 text-brand-600 animate-spin" />
                 ) : user.avatar_url ? (
                   <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-brand-50 text-brand-600 text-base font-black">
-                    {user.full_name?.[0] || '?'}
+                    {user.full_name?.charAt(0) || user.email?.charAt(0) || '?'}
                   </div>
                 )}
               </div>

@@ -9,6 +9,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getPlatformStats, getRecentActivity } from '@/lib/actions/superadmin'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
 interface StatsBreakdown {
@@ -40,8 +41,11 @@ interface PlatformStats {
 }
 
 interface ActivityLogItem {
-  text: string
+  id: string
+  event: string
+  shop: string
   time: string
+  status: string
   color: string
 }
 
@@ -67,34 +71,42 @@ export default function SuperAdminDashboardWorkspace({ initialStats, initialActi
     setLastUpdated(new Date().toLocaleTimeString())
   }, [])
 
-  // 1. Unified Real-Time Live Polling (Every 3 seconds)
+  // 1. Unified Real-Time Live Subscriptions
   useEffect(() => {
-    let active = true
-
-    async function pollDashboardData() {
+    const supabase = createClient()
+    
+    async function refreshData() {
       try {
         setRefreshing(true)
         const [liveStats, liveActivities] = await Promise.all([
           getPlatformStats(),
           getRecentActivity()
         ])
-        
-        if (active) {
-          setStats(liveStats)
-          setActivities(liveActivities)
-          setLastUpdated(new Date().toLocaleTimeString())
-        }
+        setStats(liveStats)
+        setActivities(liveActivities)
+        setLastUpdated(new Date().toLocaleTimeString())
       } catch (err) {
-        console.error('Failed to poll live superadmin telemetry:', err)
+        console.error('Realtime refresh failed:', err)
       } finally {
-        if (active) setRefreshing(false)
+        setRefreshing(false)
       }
     }
 
-    const interval = setInterval(pollDashboardData, 3000)
+    // Subscribe to all relevant tables for platform-wide updates
+    const channel = supabase
+      .channel('platform-telemetry')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shops' }, refreshData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_tickets' }, refreshData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'activity_logs' }, refreshData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, refreshData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, refreshData)
+      .subscribe()
+
+    // Also do an initial refresh to ensure we are up to date
+    refreshData()
+
     return () => {
-      active = false
-      clearInterval(interval)
+      supabase.removeChannel(channel)
     }
   }, [])
 
@@ -274,16 +286,19 @@ export default function SuperAdminDashboardWorkspace({ initialStats, initialActi
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-          {activities.map((act, idx) => (
-            <div key={idx} className="flex items-center gap-4 p-4 bg-white border border-slate-200/40 hover:border-slate-200 rounded-2xl shadow-sm transition-all group">
+          {activities.map((act) => (
+            <div key={act.id} className="flex items-center gap-4 p-4 bg-white border border-slate-200/40 hover:border-slate-200 rounded-2xl shadow-sm transition-all group">
               <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${
                 act.color === 'emerald' ? 'bg-emerald-500 shadow-md shadow-emerald-500/20' :
                 act.color === 'rose' ? 'bg-rose-500 shadow-md shadow-rose-500/20' :
                 act.color === 'amber' ? 'bg-amber-500 shadow-md shadow-amber-500/20' : 
                 'bg-blue-500 shadow-md shadow-blue-500/20'
               }`} />
-              <p className="text-xs font-bold text-slate-800 flex-1 leading-snug">{act.text}</p>
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{act.time}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-black text-slate-800 leading-none mb-1">{act.event}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{act.shop} • {act.status}</p>
+              </div>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{act.time.split(',')[1] || act.time}</span>
             </div>
           ))}
 

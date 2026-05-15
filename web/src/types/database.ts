@@ -13,6 +13,7 @@ export type MembershipRole = 'OWNER' | 'ADMIN' | 'TECHNICIAN'
 export type PaymentType = 'Cash' | 'Bank Transfer' | 'QR' | 'Card'
 export type TransactionType = 'repair_payment' | 'direct_sale' | 'refund'
 export type LocationType = 'internal' | 'vendor' | 'customer' | 'inventory_loss' | 'scrap'
+export type ProductType = 'storable' | 'service' | 'consumable'
 
 export type HRRole = 'Technician' | 'Manager' | 'Cashier'
 export type HRPayFrequency = 'DAILY' | 'MONTHLY'
@@ -138,25 +139,26 @@ export interface ActivityLogRow {
 export interface Database {
   public: {
     Tables: {
-      shops:                  { Row: ShopRow;               Insert: Omit<ShopRow, 'id'|'created_at'>;               Update: Partial<Omit<ShopRow, 'id'|'created_at'>> }
-      profiles:               { Row: ProfileRow;            Insert: Omit<ProfileRow, 'created_at'>;                  Update: Partial<Omit<ProfileRow, 'id'|'created_at'>> }
-      memberships:            { Row: MembershipRow;         Insert: Omit<MembershipRow, 'id'|'created_at'>;          Update: Partial<Pick<MembershipRow, 'role'>> }
-      partners:               { Row: PartnerRow;            Insert: Omit<PartnerRow, 'id'|'created_at'>;             Update: Partial<Omit<PartnerRow, 'id'|'shop_id'|'created_at'>> }
-      devices:                { Row: DeviceRow;             Insert: Omit<DeviceRow, 'id'|'created_at'>;              Update: Partial<Omit<DeviceRow, 'id'|'created_at'>> }
-      repair_tickets:         { Row: RepairTicketRow;       Insert: Omit<RepairTicketRow, 'id'|'created_at'|'updated_at'>; Update: Partial<Omit<RepairTicketRow, 'id'|'shop_id'|'created_at'>> }
-      ticket_status_history:  { Row: TicketStatusHistoryRow; Insert: Omit<TicketStatusHistoryRow, 'id'|'changed_at'>; Update: never }
-      evidence_logs:          { Row: EvidenceLogRow;        Insert: Omit<EvidenceLogRow, 'id'|'uploaded_at'>;        Update: never }
-      inventory_items:        { Row: InventoryItemRow;      Insert: Omit<InventoryItemRow, 'id'|'created_at'>;       Update: Partial<Omit<InventoryItemRow, 'id'|'shop_id'|'created_at'>> }
-      stock_locations:        { Row: StockLocationRow;      Insert: Omit<StockLocationRow, 'id'|'created_at'>;       Update: Partial<Omit<StockLocationRow, 'id'|'shop_id'|'created_at'>> }
-      stock_moves:            { Row: StockMoveRow;          Insert: Omit<StockMoveRow, 'id'|'created_at'>;           Update: Partial<Omit<StockMoveRow, 'id'|'shop_id'|'created_at'>> }
-      transactions:           { Row: TransactionRow;        Insert: Omit<TransactionRow, 'id'|'created_at'>;         Update: Partial<Pick<TransactionRow, 'status'|'paid_at'>> }
-      transaction_items:      { Row: TransactionItemRow;    Insert: Omit<TransactionItemRow, 'id'>;                  Update: never }
-      expenses:               { Row: ExpenseRow;            Insert: Omit<ExpenseRow, 'id'|'created_at'>;             Update: Partial<Omit<ExpenseRow, 'id'|'shop_id'|'created_at'>> }
-      hr_employees:           { Row: HREmployeeRow;         Insert: Omit<HREmployeeRow, 'id'|'created_at'>;          Update: Partial<Omit<HREmployeeRow, 'id'|'shop_id'|'created_at'>> }
-      hr_attendance:          { Row: HRAttendanceRow;       Insert: Omit<HRAttendanceRow, 'id'|'created_at'>;        Update: Partial<Omit<HRAttendanceRow, 'id'|'shop_id'|'created_at'>> }
-      hr_commissions:         { Row: HRCommissionRow;       Insert: Omit<HRCommissionRow, 'id'|'created_at'>;        Update: Partial<Omit<HRCommissionRow, 'id'|'shop_id'|'created_at'>> }
-      shop_sessions:          { Row: ShopSessionRow;        Insert: Omit<ShopSessionRow, 'id'|'created_at'>;         Update: Partial<Pick<ShopSessionRow, 'closed_at'|'closed_by'|'notes'>> }
-      activity_logs:          { Row: ActivityLogRow;        Insert: Omit<ActivityLogRow, 'id'|'created_at'>;         Update: never }
+      shops:                  { Row: ShopRow;               Insert: any; Update: any; Relationships: any[] }
+      profiles:               { Row: ProfileRow;            Insert: any; Update: any; Relationships: any[] }
+      memberships:            { Row: MembershipRow;         Insert: any; Update: any; Relationships: any[] }
+      partners:               { Row: PartnerRow;            Insert: any; Update: any; Relationships: any[] }
+      devices:                { Row: DeviceRow;             Insert: any; Update: any; Relationships: any[] }
+      repair_tickets:         { Row: RepairTicketRow;       Insert: any; Update: any; Relationships: any[] }
+      ticket_status_history:  { Row: TicketStatusHistoryRow; Insert: any; Update: any; Relationships: any[] }
+      evidence_logs:          { Row: EvidenceLogRow;        Insert: any; Update: any; Relationships: any[] }
+      inventory_items:        { Row: InventoryItemRow;      Insert: any; Update: any; Relationships: any[] }
+      stock_locations:        { Row: StockLocationRow;      Insert: any; Update: any; Relationships: any[] }
+      stock_moves:            { Row: StockMoveRow;          Insert: any; Update: any; Relationships: any[] }
+      transactions:           { Row: TransactionRow;        Insert: any; Update: any; Relationships: any[] }
+      transaction_items:      { Row: TransactionItemRow;    Insert: any; Update: any; Relationships: any[] }
+      expenses:               { Row: ExpenseRow;            Insert: any; Update: any; Relationships: any[] }
+      hr_employees:           { Row: HREmployeeRow;         Insert: any; Update: any; Relationships: any[] }
+      hr_attendance:          { Row: HRAttendanceRow;       Insert: any; Update: any; Relationships: any[] }
+      hr_commissions:         { Row: HRCommissionRow;       Insert: any; Update: any; Relationships: any[] }
+      shop_sessions:          { Row: ShopSessionRow;        Insert: any; Update: any; Relationships: any[] }
+      activity_logs:          { Row: ActivityLogRow;        Insert: any; Update: any; Relationships: any[] }
+      serial_numbers:         { Row: any;                   Insert: any; Update: any; Relationships: any[] }
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -164,6 +166,7 @@ export interface Database {
       generate_ticket_number: { Args: { p_shop_id: string }; Returns: string }
     }
     Enums: { [_ in never]: never }
+    CompositeTypes: { [_ in never]: never }
   }
 }
 

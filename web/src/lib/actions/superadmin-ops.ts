@@ -92,16 +92,24 @@ export async function getUserProfileDetails(userId: string) {
   await verifySuperAdmin()
   const admin = createAdminClient()
 
-  const [profileRes, membershipsRes, logsRes] = await Promise.all([
+  const [profileRes, membershipsRes, logsRes, authRes] = await Promise.all([
     admin.from('profiles').select('*').eq('id', userId).single(),
     admin.from('memberships').select('*, shop:shops(id, name, tax_enabled)').eq('user_id', userId),
-    admin.from('activity_logs').select('*, shop:shops(name)').eq('user_id', userId).order('created_at', { ascending: false }).limit(20)
+    admin.from('activity_logs').select('*, shop:shops(name)').eq('user_id', userId).order('created_at', { ascending: false }).limit(20),
+    admin.auth.admin.getUserById(userId)
   ])
 
   if (profileRes.error) throw profileRes.error
 
+  const userEmail = authRes.data.user?.email
+  const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS ?? '').split(',').map(e => e.trim().toLowerCase())
+  
+  if (userEmail && superAdminEmails.includes(userEmail.toLowerCase())) {
+    return { profile: null, memberships: [], activity: [] }
+  }
+
   return {
-    profile: profileRes.data,
+    profile: { ...profileRes.data, email: userEmail },
     memberships: membershipsRes.data ?? [],
     activity: (logsRes.data ?? []).map(log => ({
       id: log.id,
@@ -152,8 +160,7 @@ export async function getShopsWithPulse() {
     const totalAllTickets = (ticketsRes.data ?? []).filter(t => t.shop_id === shop.id).length
 
     const rowCount = shopMembers + totalCustomers + totalAllTickets + totalInventory + totalTransactions
-    const dataSizeBytes = rowCount * 1536 * 1.2
-    const dataSizeMB = (dataSizeBytes / (1024 * 1024)).toFixed(2)
+    const platformLoad = rowCount > 1000 ? `${(rowCount / 1000).toFixed(1)}k Units` : `${rowCount} Units`
 
     return {
       id: shop.id,
@@ -165,8 +172,25 @@ export async function getShopsWithPulse() {
         users: shopMembers,
         activeTickets: shopActiveTickets,
         criticalEvents: shopDeletions,
-        dbSize: `${dataSizeMB} MB`
+        dbSize: platformLoad
       }
     }
   })
+}
+export async function getAllShopsBilling() {
+  await verifySuperAdmin()
+  const admin = createAdminClient()
+  
+  const { data: shops } = await admin
+    .from('shops')
+    .select('id, name, subscription_status, next_billing_date, last_billing_date, subscription_amount')
+    .order('next_billing_date', { ascending: true })
+
+  const { data: recentSubs } = await admin
+    .from('platform_subscriptions')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  return { shops: shops ?? [], recentSubs: recentSubs ?? [] }
 }

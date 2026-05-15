@@ -26,7 +26,7 @@ export default async function TicketsPage() {
       status,
       priority,
       created_at,
-      device:devices(model, customer:customers(name))
+      device:devices(model, partner:partners(name))
     `)
     .eq('shop_id', membership.shop_id)
     .not('status', 'in', '("delivered","cancelled")')

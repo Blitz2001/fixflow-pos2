@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     .select(`
       id, ticket_number, status, priority, created_at,
       estimated_cost, actual_cost, estimated_completion_date,
-      device:devices(model, brand, serial_number, customer:customers(name, phone_number))
+      device:devices(model, brand, serial_number, partner:partners(name, phone))
     `)
     .eq('shop_id', membership.shop_id)
     .order('created_at', { ascending: false })

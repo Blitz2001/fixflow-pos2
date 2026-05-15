@@ -27,7 +27,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
     .from('repair_tickets')
     .select(`
       *,
-      customer:customers(name, phone_number),
+      device:devices(partner:partners(name, phone)),
       assigned_parts:serial_numbers(
         id,
         serial_number,
@@ -65,7 +65,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Checkout</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Ticket <span className="font-mono text-foreground font-semibold">{ticket.ticket_number}</span> • {ticket.customer?.name}
+            Ticket <span className="font-mono text-foreground font-semibold">{ticket.ticket_number}</span> • {ticket.device?.partner?.name}
           </p>
         </div>
       </div>
